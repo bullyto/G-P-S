@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Tournée (V7)</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1220"/>
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__title">
+      <img src="icon-192.png" class="topbar__logo" alt="logo"/>
+      <div>
+        <div class="h1">Tournée</div>
+        <div class="sub">Optimisation par distance à la mairie • LocalStorage</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="controls">
+      <label class="field">
+        <span>Ville</span>
+        <select id="citySelect"></select>
+      </label>
+
+      <div class="btnrow">
+        <button id="btnOptimize" class="btn btn-primary">Optimiser (géocoder)</button>
+        <button id="btnAdd" class="btn">Ajouter une adresse</button>
+      </div>
+
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="listwrap">
+      <div class="listhead">
+        <div id="cityMeta" class="citymeta"></div>
+        <div class="legend">
+          <span class="pill">Tap = Waze + ✓</span>
+          <span class="pill">✎ modifier • 🗑 supprimer</span>
+        </div>
+      </div>
+      <ul id="addrList" class="addrlist"></ul>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="modal-backdrop hidden"></div>
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__card">
+      <div class="modal__head">
+        <div id="modalTitle" class="modal__title">Ajouter une adresse</div>
+        <button id="modalClose" class="iconbtn" aria-label="Fermer">✕</button>
+      </div>
+
+      <div class="modal__body">
+        <label class="field">
+          <span>Ville</span>
+          <select id="modalCity"></select>
+        </label>
+
+        <label class="field">
+          <span>Adresse (rue, numéro, etc.)</span>
+          <input id="modalStreet" type="text" placeholder="Ex : 17 rue des Eaux Vives" autocomplete="street-address"/>
+        </label>
+
+        <label class="field">
+          <span>Code postal (optionnel)</span>
+          <input id="modalPostcode" type="tel" inputmode="numeric" placeholder="66xxx" maxlength="5"/>
+        </label>
+
+        <div class="hint">
+          L’adresse est <b>géocodée immédiatement</b> et refusée si elle ne correspond pas au 66
+          (ou si elle est trop loin de la mairie de la ville sélectionnée).
+        </div>
+      </div>
+
+      <div class="modal__foot">
+        <button id="modalSave" class="btn btn-primary">Enregistrer</button>
+        <button id="modalCancel" class="btn">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
