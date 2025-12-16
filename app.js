@@ -16,6 +16,7 @@ const statusEl = document.getElementById("status");
 const cityMeta = document.getElementById("cityMeta");
 const btnOptimize = document.getElementById("btnOptimize");
 const btnAdd = document.getElementById("btnAdd");
+const btnExportTxt = document.getElementById("btnExportTxt");
 
 // modal
 const modal = document.getElementById("modal");
@@ -421,6 +422,36 @@ function formatLine(a){
   return `${a.street}, ${pc} ${city}`.replace(/\s+/g," ").trim();
 }
 
+function exportAllTxt(){
+  // Exporte toutes les villes + toutes les adresses dans l'ordre actuel (tri mairie si déjà appliqué)
+  // Inclut aussi l'état 'fait' si présent.
+  const lines = [];
+  lines.push("EXPORT TOURNEE (TXT)");
+  lines.push(`Date: ${new Date().toLocaleString("fr-FR")}`);
+  lines.push("");
+
+  const cities = Object.keys(data).sort((a,b)=> String(a).localeCompare(String(b),"fr"));
+  for(const city of cities){
+    const arr = data[city] || [];
+    lines.push(`VILLE : ${city}`);
+    lines.push("----------------------------------------");
+    arr.forEach((a, idx)=>{
+      const mark = a.done ? "✓" : " ";
+      lines.push(`${String(idx+1).padStart(3,"0")}. [${mark}] ${formatLine(a)}`);
+    });
+    lines.push("");
+  }
+
+  const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tournee-export.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+  setStatus("Export TXT téléchargé ✅");
+}
+
 function wazeUrl(a){
   const q = encodeURIComponent(formatLine(a));
   // deep link first
@@ -700,6 +731,7 @@ function wire(){
 
   btnOptimize.addEventListener("click", ()=>optimizeCity());
   btnAdd.addEventListener("click", ()=>openModal("add", {city: currentCity()}));
+  btnExportTxt.addEventListener("click", ()=>exportAllTxt());
 
   modalClose.addEventListener("click", closeModal);
   modalCancel.addEventListener("click", closeModal);
