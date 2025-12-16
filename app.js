@@ -422,6 +422,7 @@ function formatLine(a){
   return `${a.street}, ${pc} ${city}`.replace(/\s+/g," ").trim();
 }
 
+
 function exportAllTxt(){
   // Exporte toutes les villes + toutes les adresses dans l'ordre actuel (tri mairie si déjà appliqué)
   // Inclut aussi l'état 'fait' si présent.
@@ -502,7 +503,14 @@ function render(){
     b1.textContent = `${a.postcode} • ${a.city}`;
     const b2 = document.createElement("span");
     b2.className = "badge ok";
-    b2.textContent = a.done ? "✓ Fait" : "À faire";
+    b2.innerHTML = a.done ? "✓ <strong>Fait</strong>" : "À faire";
+    b2.style.cursor = "pointer";
+    b2.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      a.done = !a.done;
+      saveData();
+      render();
+    });
     l2.appendChild(b1); l2.appendChild(b2);
     if(typeof a._dist === "number" && isFinite(a._dist)){
       const b3 = document.createElement("span");
@@ -522,8 +530,14 @@ function render(){
       const url = wazeUrl(a);
       // Try deep link; if blocked, user can still have Waze installed
       window.location.href = url.deep;
-      setTimeout(()=>{ window.open(url.web, "_blank"); }, 900);
-    });
+      // Ne pas ouvrir waze.com automatiquement (sinon au retour ça affiche la page waze.com)
+      // Fallback seulement si Waze ne s'est pas ouvert (page toujours visible)
+      setTimeout(()=>{
+        if(document.visibilityState === "visible"){
+          if(confirm("Waze ne s'est pas ouvert. Ouvrir la version web ?")) window.open(url.web, "_blank");
+        }
+      }, 900);
+      });
 
     const actions = document.createElement("div");
     actions.className = "actions";
@@ -557,12 +571,29 @@ function render(){
   });
 }
 
+
+function getDefaultPostcode(city){
+  // Devine un code postal à partir des adresses déjà enregistrées pour cette ville
+  const list = data?.[city] || [];
+  const counts = {};
+  for(const a of list){
+    const cp = String(a.postcode || "").trim();
+    if(/^66\d{3}$/.test(cp)) counts[cp] = (counts[cp] || 0) + 1;
+  }
+  let best = "";
+  let bestN = -1;
+  for(const [cp,n] of Object.entries(counts)){
+    if(n > bestN){ bestN = n; best = cp; }
+  }
+  return best;
+}
+
 function openModal(mode, preset){
   editContext = preset?.editContext || null;
   modalTitle.textContent = mode === "edit" ? "Modifier une adresse" : "Ajouter une adresse";
   modalCity.value = preset?.city || currentCity();
   modalStreet.value = preset?.street || "";
-  modalPostcode.value = preset?.postcode || "";
+  modalPostcode.value = (preset?.postcode || "") || getDefaultPostcode(modalCity.value);
   modal.classList.remove("hidden");
   modalBackdrop.classList.remove("hidden");
   setTimeout(()=>modalStreet.focus(), 60);
@@ -731,7 +762,7 @@ function wire(){
 
   btnOptimize.addEventListener("click", ()=>optimizeCity());
   btnAdd.addEventListener("click", ()=>openModal("add", {city: currentCity()}));
-  btnExportTxt.addEventListener("click", ()=>exportAllTxt());
+  btnExportTxt && btnExportTxt.addEventListener("click", exportAllTxt);
 
   modalClose.addEventListener("click", closeModal);
   modalCancel.addEventListener("click", closeModal);
