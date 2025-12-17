@@ -472,13 +472,7 @@ function render(){
 
   cityMeta.textContent = `${city} • ${done} / ${total} faits`;
 
-  // sort: by distance to mairie if coords exist, else keep insertion
-  arr.sort((a,b)=>{
-    const da = (a._dist ?? Infinity);
-    const db = (b._dist ?? Infinity);
-    if(da !== db) return da - db;
-    return (a.street||"").localeCompare(b.street||"","fr");
-  });
+  // ordre conservé (déjà trié) : mairie → plus proche → plus proche…
 
   addrList.innerHTML = "";
   arr.forEach((a, idx)=>{
@@ -512,11 +506,17 @@ function render(){
       render();
     });
     l2.appendChild(b1); l2.appendChild(b2);
-    if(typeof a._dist === "number" && isFinite(a._dist)){
+    if(typeof a._stepKm === "number" && isFinite(a._stepKm)){
       const b3 = document.createElement("span");
       b3.className = "badge";
-      b3.textContent = `${a._dist.toFixed(1)} km mairie`;
+      b3.textContent = `+${a._stepKm.toFixed(1)} km`;
       l2.appendChild(b3);
+    }
+    if(typeof a._cumKm === "number" && isFinite(a._cumKm)){
+      const b4 = document.createElement("span");
+      b4.className = "badge";
+      b4.textContent = `cumul ${a._cumKm.toFixed(1)} km`;
+      l2.appendChild(b4);
     }
 
     main.appendChild(l1);
@@ -687,16 +687,54 @@ function openEdit(city, id){
 async function applyOrderForCity(city){
   const arr = data[city] || [];
   const mairie = await getMairie(city);
+
+  // Sépare les adresses géocodées / non géocodées
+  const ok = [];
+  const ko = [];
   for(const a of arr){
     if(typeof a.lat === "number" && typeof a.lon === "number"){
-      a._dist = haversineKm(mairie.lat, mairie.lon, a.lat, a.lon);
+      ok.push(a);
     } else {
-      a._dist = Infinity;
+      ko.push(a);
     }
   }
-  // order by distance to mairie
-  arr.sort((a,b)=> (a._dist??Infinity) - (b._dist??Infinity));
-  data[city] = arr;
+
+  // Tri "mini GPS" :
+  // départ = mairie, puis on prend toujours l'adresse la plus proche du point courant,
+  // puis la plus proche de la précédente, etc. (nearest-neighbor)
+  let current = { lat: mairie.lat, lon: mairie.lon };
+  const ordered = [];
+  let cum = 0;
+
+  while(ok.length){
+    let bestIdx = 0;
+    let bestD = Infinity;
+
+    for(let i=0;i<ok.length;i++){
+      const a = ok[i];
+      const d = haversineKm(current.lat, current.lon, a.lat, a.lon);
+      if(d < bestD){
+        bestD = d;
+        bestIdx = i;
+      }
+    }
+
+    const next = ok.splice(bestIdx, 1)[0];
+    next._stepKm = isFinite(bestD) ? bestD : null;
+    if(next._stepKm != null) cum += next._stepKm;
+    next._cumKm = next._stepKm != null ? cum : null;
+
+    ordered.push(next);
+    current = next;
+  }
+
+  // Les non-géocodées restent à la fin (et on nettoie les champs)
+  for(const a of ko){
+    a._stepKm = null;
+    a._cumKm = null;
+  }
+
+  data[city] = [...ordered, ...ko];
   saveData();
 }
 
