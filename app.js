@@ -10,6 +10,11 @@ const LS_KEY = "tournee_v7_data";
 const LS_MAIRIES = "tournee_v7_mairies";
 const LS_LAST_CITY = "tournee_v7_last_city";
 
+const LS_SEED_VERSION = "tournee_v7_seed_version";
+const SEED_VERSION = "seed_2025-12-17_1";
+const SEED_URL = "./data/adresses.csv";
+
+
 const citySelect = document.getElementById("citySelect");
 const addrList = document.getElementById("addrList");
 const statusEl = document.getElementById("status");
@@ -58,6 +63,112 @@ function loadMairies(){
   }catch(e){ return {}; }
 }
 function saveMairies(m){ localStorage.setItem(LS_MAIRIES, JSON.stringify(m)); }
+
+
+async function fetchText(url){
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return await r.text();
+}
+
+// CSV parser (gère guillemets)
+function parseCSV(text){
+  const rows = [];
+  let row = [], cell = "", inQ = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const next = text[i+1];
+    if(inQ){
+      if(ch === '"' && next === '"'){ cell += '"'; i++; continue; }
+      if(ch === '"'){ inQ = false; continue; }
+      cell += ch; continue;
+    }else{
+      if(ch === '"'){ inQ = true; continue; }
+      if(ch === ','){ row.push(cell); cell=""; continue; }
+      if(ch === '\n'){
+        row.push(cell); cell="";
+        if(row.some(v=>String(v).trim()!=="")) rows.push(row);
+        row=[]; continue;
+      }
+      if(ch === '\r') continue;
+      cell += ch;
+    }
+  }
+  if(cell.length || row.length){
+    row.push(cell);
+    if(row.some(v=>String(v).trim()!=="")) rows.push(row);
+  }
+  return rows;
+}
+
+function seedDataFromCSVText(csvText){
+  const rows = parseCSV(csvText.trim());
+  if(!rows.length) return {};
+  const header = rows[0].map(h=>String(h||"").trim().toLowerCase());
+  const idxVille = header.indexOf("ville");
+  const idxOrdre = header.indexOf("ordre");
+  const idxAdr = header.indexOf("adresse");
+  const idxStep = header.indexOf("km_depuis_precedente");
+  const idxCum = header.indexOf("km_cumul");
+
+  const byCity = {};
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    const ville = (r[idxVille] ?? "").trim() || "Perpignan";
+    const ordre = parseInt((r[idxOrdre] ?? "0").trim(), 10) || 0;
+    const full = (r[idxAdr] ?? "").trim();
+    if(!full) continue;
+
+    let postcode = "";
+    const m = full.match(/\b(\d{5})\b/);
+    if(m) postcode = m[1];
+
+    let street = full;
+    if(postcode){
+      street = full.replace(new RegExp("\\s*"+postcode+"\\s+.*$"), "").trim();
+      if(!street) street = full;
+    }
+
+    const item = {
+      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : (String(Date.now())+"_"+Math.random().toString(16).slice(2)),
+      street,
+      postcode: postcode || "",
+      city: ville,
+      lat: null,
+      lon: null,
+      done: false,
+      _stepKm: idxStep >= 0 ? parseFloat(r[idxStep]) : null,
+      _cumKm: idxCum >= 0 ? parseFloat(r[idxCum]) : null
+    };
+
+    if(!byCity[ville]) byCity[ville] = [];
+    byCity[ville].push({ordre, item});
+  }
+
+  const out = {};
+  Object.keys(byCity).forEach(v=>{
+    out[v] = byCity[v].sort((a,b)=>a.ordre-b.ordre).map(x=>x.item);
+  });
+  return out;
+}
+
+async function ensureSeedLoaded(){
+  const v = localStorage.getItem(LS_SEED_VERSION);
+  if(v === SEED_VERSION) return;
+
+  try{
+    setStatus("Chargement des adresses (CSV)…");
+    const txt = await fetchText(SEED_URL);
+    const seeded = seedDataFromCSVText(txt);
+    data = sanitizeData(seeded); // overwrite global
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    localStorage.setItem(LS_SEED_VERSION, SEED_VERSION);
+    setStatus("Adresses chargées ✔");
+  }catch(e){
+    console.error(e);
+    setStatus("Impossible de charger le CSV (vérifie data/adresses.csv).", true);
+  }
+}
 
 function setStatus(msg, isError=false){
   statusEl.textContent = msg || "";
@@ -472,9 +583,8 @@ function render(){
 
   cityMeta.textContent = `${city} • ${done} / ${total} faits`;
 
-  // ordre conservé (déjà trié) : mairie → plus proche → plus proche…
-
-  addrList.innerHTML = "";
+  // ordre conservé : mairie → plus proche → plus proche…
+addrList.innerHTML = "";
   arr.forEach((a, idx)=>{
     const li = document.createElement("li");
     li.className = "addr";
@@ -685,34 +795,32 @@ function openEdit(city, id){
 }
 
 async function applyOrderForCity(city){
-  const arr = data[city] || [];
   const mairie = await getMairie(city);
 
-  // Sépare les adresses géocodées / non géocodées
+  const arr = getCityList(city);
+
   const ok = [];
   const ko = [];
   for(const a of arr){
     if(typeof a.lat === "number" && typeof a.lon === "number"){
       ok.push(a);
-    } else {
+    }else{
       ko.push(a);
     }
   }
 
-  // Tri "mini GPS" :
-  // départ = mairie, puis on prend toujours l'adresse la plus proche du point courant,
-  // puis la plus proche de la précédente, etc. (nearest-neighbor)
-  let current = { lat: mairie.lat, lon: mairie.lon };
-  const ordered = [];
+  let curLat = mairie.lat;
+  let curLon = mairie.lon;
   let cum = 0;
 
+  const ordered = [];
   while(ok.length){
     let bestIdx = 0;
     let bestD = Infinity;
 
     for(let i=0;i<ok.length;i++){
       const a = ok[i];
-      const d = haversineKm(current.lat, current.lon, a.lat, a.lon);
+      const d = haversineKm(curLat, curLon, a.lat, a.lon);
       if(d < bestD){
         bestD = d;
         bestIdx = i;
@@ -725,10 +833,10 @@ async function applyOrderForCity(city){
     next._cumKm = next._stepKm != null ? cum : null;
 
     ordered.push(next);
-    current = next;
+    curLat = next.lat;
+    curLon = next.lon;
   }
 
-  // Les non-géocodées restent à la fin (et on nettoie les champs)
   for(const a of ko){
     a._stepKm = null;
     a._cumKm = null;
@@ -780,7 +888,9 @@ async function optimizeCity(){
   }
 }
 
-function wire(){
+async function wire(){
+  await ensureSeedLoaded();
+
   fillCitySelect();
   ensureIds();
   // cleanup: dedupe every city and remove non-66
@@ -811,4 +921,4 @@ function wire(){
   applyOrderForCity(currentCity()).then(()=>render()).catch(()=>render());
 }
 
-wire();
+wire().catch(e=>{ console.error(e); });
