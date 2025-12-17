@@ -460,23 +460,6 @@ function wazeUrl(a){
     deep: `waze://?q=${q}&navigate=yes`,
     web: `https://waze.com/ul?q=${q}&navigate=yes`
   };
-
-function googleMapsWalkingUrl(a){
-  const hasLatLon = a && typeof a.lat === 'number' && typeof a.lon === 'number' && !Number.isNaN(a.lat) && !Number.isNaN(a.lon);
-  const destination = hasLatLon ? `${a.lat},${a.lon}` : encodeURIComponent(fullText(a));
-  return `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=walking`;
-}
-
-function openNavigation(a){
-  // Choix simple : OK = Waze, Annuler = Google Maps (piéton)
-  const useWaze = window.confirm("Ouvrir l'itinéraire avec :\n\nOK = Waze\nAnnuler = Google Maps (mode piéton)");
-  if(useWaze){
-    openNavigation(a);
-  } else {
-    window.location.href = googleMapsWalkingUrl(a);
-  }
-}
-
 }
 
 function render(){
@@ -544,8 +527,17 @@ function render(){
       a.done = true;
       saveData();
       render();
-            openNavigation(a);
-});
+      const url = wazeUrl(a);
+      // Try deep link; if blocked, user can still have Waze installed
+      window.location.href = url.deep;
+      // Ne pas ouvrir waze.com automatiquement (sinon au retour ça affiche la page waze.com)
+      // Fallback seulement si Waze ne s'est pas ouvert (page toujours visible)
+      setTimeout(()=>{
+        if(document.visibilityState === "visible"){
+          if(confirm("Waze ne s'est pas ouvert. Ouvrir la version web ?")) window.open(url.web, "_blank");
+        }
+      }, 900);
+      });
 
     const actions = document.createElement("div");
     actions.className = "actions";
@@ -782,3 +774,97 @@ function wire(){
 }
 
 wire();
+
+
+/* =========================================================
+   NAVIGATION CHOIX : WAZE ou GOOGLE MAPS (PIETON)
+   UI modale stylée (utilise styles.css existant)
+   ========================================================= */
+
+function openWaze(dest){
+  const url = dest.lat && dest.lng
+    ? `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`
+    : `https://waze.com/ul?q=${encodeURIComponent(dest.address)}&navigate=yes`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function openGoogleMapsWalking(dest){
+  const url = dest.lat && dest.lng
+    ? `https://www.google.com/maps/dir/?api=1&destination=${dest.lat},${dest.lng}&travelmode=walking`
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest.address)}&travelmode=walking`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// ---- Modal UI ----
+function showNavChoice(item){
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <div class="modal__card">
+      <div class="modal__head">
+        <div class="modal__title">Ouvrir l’itinéraire</div>
+        <button class="iconbtn" id="closeNav">✕</button>
+      </div>
+      <div class="modal__body">
+        <div class="line1">${item.label || item.address || ""}</div>
+        <div class="hint">Choisis l’application de navigation</div>
+      </div>
+      <div class="modal__foot">
+        <button class="btn btn-primary" id="btnWaze">Waze</button>
+        <button class="btn" id="btnMaps">Google Maps (piéton)</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  document.body.appendChild(modal);
+
+  const close = () => {
+    backdrop.remove();
+    modal.remove();
+  };
+
+  document.getElementById("closeNav").onclick = close;
+  backdrop.onclick = close;
+
+  document.getElementById("btnWaze").onclick = () => {
+    openWaze({
+      lat: item.lat,
+      lng: item.lon || item.lng,
+      address: item.label || item.address
+    });
+    close();
+  };
+
+  document.getElementById("btnMaps").onclick = () => {
+    openGoogleMapsWalking({
+      lat: item.lat,
+      lng: item.lon || item.lng,
+      address: item.label || item.address
+    });
+    close();
+  };
+}
+
+/* =========================================================
+   HOOK : clic sur une adresse -> choix navigation
+   ========================================================= */
+document.addEventListener("click", (e) => {
+  const row = e.target.closest(".addr");
+  if(!row) return;
+  const idx = row.dataset && row.dataset.idx;
+  const city = document.getElementById("citySelect")?.value;
+  if(!city || idx == null) return;
+
+  const item = (window.data && window.data[city] && window.data[city][idx])
+    ? window.data[city][idx]
+    : null;
+
+  if(item){
+    showNavChoice(item);
+  }
+});
