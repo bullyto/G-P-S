@@ -10,6 +10,9 @@ const LS_KEY = "tournee_v7_data";
 const LS_MAIRIES = "tournee_v7_mairies";
 const LS_LAST_CITY = "tournee_v7_last_city";
 
+// Choix navigation : "waze" (par défaut) ou "maps" (Google Maps en mode piéton)
+const LS_NAV_APP = "tournee_v7_nav_app";
+
 const LS_SEED_VERSION = "tournee_v7_seed_version";
 const SEED_VERSION = "seed_2025-12-17_1";
 const SEED_URL = "./data/adresses.csv";
@@ -22,6 +25,14 @@ const cityMeta = document.getElementById("cityMeta");
 const btnOptimize = document.getElementById("btnOptimize");
 const btnAdd = document.getElementById("btnAdd");
 const btnExportTxt = document.getElementById("btnExportTxt");
+
+// Toggle navigation (en haut)
+const navWazeBtn = document.getElementById("navWaze");
+const navMapsBtn = document.getElementById("navMaps");
+
+// navigation toggle (en haut)
+const navWazeBtn = document.getElementById("navWaze");
+const navMapsBtn = document.getElementById("navMaps");
 
 // modal
 const modal = document.getElementById("modal");
@@ -533,6 +544,23 @@ function formatLine(a){
   return `${a.street}, ${pc} ${city}`.replace(/\s+/g," ").trim();
 }
 
+function getNavApp(){
+  const v = (localStorage.getItem(LS_NAV_APP) || "waze").toLowerCase();
+  return (v === "maps") ? "maps" : "waze";
+}
+
+function setNavApp(v){
+  const val = (String(v||"").toLowerCase() === "maps") ? "maps" : "waze";
+  localStorage.setItem(LS_NAV_APP, val);
+  updateNavUI();
+}
+
+function updateNavUI(){
+  const mode = getNavApp();
+  if(navWazeBtn) navWazeBtn.classList.toggle("active", mode === "waze");
+  if(navMapsBtn) navMapsBtn.classList.toggle("active", mode === "maps");
+}
+
 
 function exportAllTxt(){
   // Exporte toutes les villes + toutes les adresses dans l'ordre actuel (tri mairie si déjà appliqué)
@@ -571,6 +599,12 @@ function wazeUrl(a){
     deep: `waze://?q=${q}&navigate=yes`,
     web: `https://waze.com/ul?q=${q}&navigate=yes`
   };
+}
+
+function mapsWalkUrl(a){
+  // URL stable (PWA / iOS / Android) : Google Maps Directions API
+  const dest = encodeURIComponent(formatLine(a));
+  return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
 }
 
 function render(){
@@ -633,10 +667,17 @@ addrList.innerHTML = "";
     main.appendChild(l2);
 
     main.addEventListener("click", ()=>{
-      // open waze and mark done
+      // Ouvre l'adresse dans l'app choisie (Waze ou Google Maps en mode piéton)
       a.done = true;
       saveData();
       render();
+
+      const mode = getNavApp();
+      if(mode === "maps"){
+        window.location.href = mapsWalkUrl(a);
+        return;
+      }
+
       const url = wazeUrl(a);
       // Try deep link; if blocked, user can still have Waze installed
       window.location.href = url.deep;
@@ -647,7 +688,7 @@ addrList.innerHTML = "";
           if(confirm("Waze ne s'est pas ouvert. Ouvrir la version web ?")) window.open(url.web, "_blank");
         }
       }, 900);
-      });
+    });
 
     const actions = document.createElement("div");
     actions.className = "actions";
@@ -911,6 +952,11 @@ async function wire(){
   btnOptimize.addEventListener("click", ()=>optimizeCity());
   btnAdd.addEventListener("click", ()=>openModal("add", {city: currentCity()}));
   btnExportTxt && btnExportTxt.addEventListener("click", exportAllTxt);
+
+  // Toggle navigation (Waze / Maps piéton)
+  if(navWazeBtn) navWazeBtn.addEventListener("click", ()=>setNavApp("waze"));
+  if(navMapsBtn) navMapsBtn.addEventListener("click", ()=>setNavApp("maps"));
+  updateNavUI();
 
   modalClose.addEventListener("click", closeModal);
   modalCancel.addEventListener("click", closeModal);

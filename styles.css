@@ -32,6 +32,32 @@ body{
 .h1{font-weight:800; font-size:18px; letter-spacing:.2px}
 .sub{font-size:12px;color:var(--muted)}
 
+/* Toggle Waze / Maps */
+.navtoggle{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+  padding:8px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(15,23,48,.55);
+}
+.segbtn{
+  flex:1;
+  border:1px solid rgba(255,255,255,.10);
+  background:#0f1730;
+  color:var(--muted);
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:900;
+}
+.segbtn:active{transform:translateY(1px)}
+.segbtn.active{
+  color:var(--text);
+  background:linear-gradient(180deg,var(--btn2),#1d2f58);
+}
+
 .wrap{padding:14px; display:flex; flex-direction:column; gap:12px; max-width:820px; margin:0 auto}
 .controls{
   background:rgba(17,26,47,.86);
