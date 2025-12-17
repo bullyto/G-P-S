@@ -30,10 +30,6 @@ const btnExportTxt = document.getElementById("btnExportTxt");
 const navWazeBtn = document.getElementById("navWaze");
 const navMapsBtn = document.getElementById("navMaps");
 
-// navigation toggle (en haut)
-const navWazeBtn = document.getElementById("navWaze");
-const navMapsBtn = document.getElementById("navMaps");
-
 // modal
 const modal = document.getElementById("modal");
 const modalBackdrop = document.getElementById("modalBackdrop");
@@ -141,7 +137,9 @@ function seedDataFromCSVText(csvText){
     }
 
     const item = {
-      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : (String(Date.now())+"_"+Math.random().toString(16).slice(2)),
+      id: (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : (String(Date.now())+"_"+Math.random().toString(16).slice(2)),
       street,
       postcode: postcode || "",
       city: ville,
@@ -187,7 +185,10 @@ function setStatus(msg, isError=false){
 }
 
 function stripAccents(s){
-  return (s||"").normalize("NFD").replace(/\p{Diacritic}/gu,"");
+  // Compatible (évite les Unicode property escapes \p{…} qui plantent sur certains Android)
+  return (s||"")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function normSpaces(s){ return (s||"").replace(/\s+/g," ").trim(); }
