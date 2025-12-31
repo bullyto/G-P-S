@@ -515,3 +515,18 @@ select:focus, input:focus{border-color: rgba(100,160,255,.55)}
   height: 40px;
   border-radius: 16px;
 }
+
+/* Readability fix v10.15: enlever le '...'
+   (l'ancien .line1 avait white-space:nowrap + ellipsis) */
+.addr .line1{
+  white-space: normal !important;
+  text-overflow: clip !important;
+  overflow: hidden;
+  word-break: break-word;
+  hyphens: auto;
+  font-size: 18px; /* un peu moins gros, plus lisible */
+}
+
+.addr .badge.citypill{
+  max-width: 100%;
+}
