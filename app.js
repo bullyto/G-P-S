@@ -684,9 +684,17 @@ addrList.innerHTML = "";
 
     const l2 = document.createElement("div");
     l2.className = "line2";
+
+    const topRow = document.createElement("div");
+    topRow.className = "badgerow";
+
+    const kmRow = document.createElement("div");
+    kmRow.className = "kmrow";
+
     const b1 = document.createElement("span");
-    b1.className = "badge";
+    b1.className = "badge citypill";
     b1.textContent = `${a.postcode} • ${a.city}`;
+
     const b2 = document.createElement("span");
     b2.className = "badge " + (a.done ? "done" : "todo");
     b2.innerHTML = a.done ? "✓ <strong>Fait</strong>" : "À faire";
@@ -697,19 +705,25 @@ addrList.innerHTML = "";
       saveData();
       render();
     });
-    l2.appendChild(b1); l2.appendChild(b2);
+
+    topRow.appendChild(b1);
+    topRow.appendChild(b2);
+
     if(typeof a._stepKm === "number" && isFinite(a._stepKm)){
       const b3 = document.createElement("span");
       b3.className = "badge";
       b3.textContent = `+${a._stepKm.toFixed(1)} km`;
-      l2.appendChild(b3);
+      kmRow.appendChild(b3);
     }
     if(typeof a._cumKm === "number" && isFinite(a._cumKm)){
       const b4 = document.createElement("span");
       b4.className = "badge";
       b4.textContent = `cumul ${a._cumKm.toFixed(1)} km`;
-      l2.appendChild(b4);
+      kmRow.appendChild(b4);
     }
+
+    l2.appendChild(topRow);
+    if(kmRow.childNodes.length) l2.appendChild(kmRow);
 
     main.appendChild(l1);
     main.appendChild(l2);
