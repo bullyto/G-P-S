@@ -24,17 +24,21 @@
       <button id="navWaze" class="segbtn" type="button">Waze</button>
       <button id="navMaps" class="segbtn" type="button">Maps (piéton)</button>
     </div>
-
-      <div class="panel vehiclepanel">
-        <button id="btnSaveVehicle" class="secondary">📍 Enregistrer véhicule</button>
-        <button id="btnFindVehicle" class="secondary">🧭 Retrouver véhicule</button>
-        <div id="vehicleInfo" class="muted" style="margin-top:10px; line-height:1.3">
-          Astuce : enregistre quand tu te gares, puis “Retrouver” te lance Maps à pied.
-        </div>
-      </div>
   </header>
 
   <main class="wrap">
+
+    <section class="vehicle">
+      <div class="vehicle__card">
+        <div class="vehicle__actions">
+          <button id="btnSaveVehicle" class="btn btn-ghost" type="button">📍 Enregistrer véhicule</button>
+          <button id="btnFindVehicle" class="btn btn-ghost" type="button">🧭 Retrouver véhicule</button>
+        </div>
+        <div class="vehicle__hint">
+          Astuce : enregistre quand tu te gares, puis “Retrouver” te lance Maps à pied.
+        </div>
+      </div>
+    </section>
     <section class="controls">
       <label class="field">
         <span>Ville</span>

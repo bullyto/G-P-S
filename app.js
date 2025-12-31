@@ -10,12 +10,11 @@ const LS_KEY = "tournee_v7_data";
 const LS_MAIRIES = "tournee_v7_mairies";
 const LS_LAST_CITY = "tournee_v7_last_city";
 
+// Position véhicule (parking)
+const LS_VEHICLE = "tournee_v7_vehicle";
+
 // Choix navigation : "waze" (par défaut) ou "maps" (Google Maps en mode piéton)
 const LS_NAV_APP = "tournee_v7_nav_app";
-
-
-// Position du véhicule (GPS) — enregistrer / retrouver
-const LS_VEHICLE_POS = "tournee_v7_vehicle_pos";
 
 const LS_SEED_VERSION = "tournee_v7_seed_version";
 const SEED_VERSION = "seed_2025-12-17_1";
@@ -30,13 +29,13 @@ const btnOptimize = document.getElementById("btnOptimize");
 const btnAdd = document.getElementById("btnAdd");
 const btnExportTxt = document.getElementById("btnExportTxt");
 
+// Parking véhicule
+const btnSaveVehicle = document.getElementById("btnSaveVehicle");
+const btnFindVehicle = document.getElementById("btnFindVehicle");
+
 // Toggle navigation (en haut)
 const navWazeBtn = document.getElementById("navWaze");
 const navMapsBtn = document.getElementById("navMaps");
-// Véhicule : sauvegarde / retrouver GPS
-const btnSaveVehicle = document.getElementById("btnSaveVehicle");
-const btnFindVehicle = document.getElementById("btnFindVehicle");
-const vehicleInfo = document.getElementById("vehicleInfo");
 
 // modal
 const modal = document.getElementById("modal");
@@ -563,10 +562,8 @@ function setNavApp(v){
   localStorage.setItem(LS_NAV_APP, val);
   updateNavUI();
 
-  // Véhicule GPS
-  if(btnSaveVehicle) btnSaveVehicle.addEventListener("click", saveVehicleLocation);
-  if(btnFindVehicle) btnFindVehicle.addEventListener("click", findVehicle);
-  updateVehicleUI();
+  // Parking véhicule
+  initVehicleUI();
 }
 
 function updateNavUI(){
@@ -621,91 +618,6 @@ function mapsWalkUrl(a){
   return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
 }
 
-function loadVehiclePos(){
-  try{
-    return JSON.parse(localStorage.getItem(LS_VEHICLE_POS) || "null");
-  }catch(_){ return null; }
-}
-
-function saveVehiclePos(pos){
-  localStorage.setItem(LS_VEHICLE_POS, JSON.stringify(pos));
-}
-
-function formatVehicleInfo(pos){
-  if(!pos) return "Aucune position enregistrée.";
-  const d = new Date(pos.ts || Date.now());
-  const acc = (typeof pos.acc === "number" && isFinite(pos.acc)) ? ` ±${Math.round(pos.acc)}m` : "";
-  return `Enregistré le ${d.toLocaleString("fr-FR")}${acc}`;
-}
-
-function updateVehicleUI(){
-  const pos = loadVehiclePos();
-  if(vehicleInfo) vehicleInfo.textContent = formatVehicleInfo(pos);
-  if(btnFindVehicle) btnFindVehicle.disabled = !pos;
-}
-
-function requestCurrentPosition(){
-  return new Promise((resolve, reject)=>{
-    if(!("geolocation" in navigator)) return reject(new Error("GPS indisponible sur cet appareil."));
-    navigator.geolocation.getCurrentPosition(
-      p => resolve(p),
-      err => reject(err),
-      { enableHighAccuracy:true, timeout:12000, maximumAge: 3000 }
-    );
-  });
-}
-
-function mapsWalkToLatLonUrl(originLatLon, destLatLon){
-  const dest = encodeURIComponent(`${destLatLon.lat},${destLatLon.lon}`);
-  const url = new URL("https://www.google.com/maps/dir/?api=1");
-  url.searchParams.set("destination", `${destLatLon.lat},${destLatLon.lon}`);
-  url.searchParams.set("travelmode", "walking");
-  if(originLatLon){
-    url.searchParams.set("origin", `${originLatLon.lat},${originLatLon.lon}`);
-  }
-  return url.toString();
-}
-
-async function saveVehicleLocation(){
-  try{
-    setStatus("GPS : localisation du véhicule…");
-    const p = await requestCurrentPosition();
-    const pos = {
-      lat: p.coords.latitude,
-      lon: p.coords.longitude,
-      acc: p.coords.accuracy,
-      ts: Date.now()
-    };
-    saveVehiclePos(pos);
-    updateVehicleUI();
-    setStatus("Véhicule enregistré ✅");
-  }catch(e){
-    setStatus((e && e.message) ? e.message : "Impossible d'obtenir le GPS.", true);
-  }
-}
-
-async function findVehicle(){
-  const dest = loadVehiclePos();
-  if(!dest){
-    setStatus("Aucune position véhicule enregistrée.", true);
-    return;
-  }
-
-  // On tente d'obtenir la position actuelle pour avoir un itinéraire complet (origine->véhicule).
-  // Si refus / échec, on ouvre quand même Maps vers la destination.
-  let origin = null;
-  try{
-    setStatus("GPS : ta position actuelle…");
-    const p = await requestCurrentPosition();
-    origin = { lat: p.coords.latitude, lon: p.coords.longitude };
-  }catch(_){
-    // ignore
-  }
-
-  setStatus("Ouverture de Google Maps (piéton)…");
-  window.location.href = mapsWalkToLatLonUrl(origin, dest);
-}
-
 function render(){
   const city = currentCity();
   localStorage.setItem(LS_LAST_CITY, city);
@@ -739,7 +651,7 @@ addrList.innerHTML = "";
     b1.className = "badge";
     b1.textContent = `${a.postcode} • ${a.city}`;
     const b2 = document.createElement("span");
-    b2.className = "badge ok";
+    b2.className = "badge " + (a.done ? "done" : "todo");
     b2.innerHTML = a.done ? "✓ <strong>Fait</strong>" : "À faire";
     b2.style.cursor = "pointer";
     b2.addEventListener("click", (e)=>{
@@ -1028,6 +940,62 @@ async function optimizeCity(){
   }
 }
 
+
+function loadVehicle(){
+  try{ return JSON.parse(localStorage.getItem(LS_VEHICLE) || "null"); }catch(e){ return null; }
+}
+function saveVehiclePos(pos){
+  localStorage.setItem(LS_VEHICLE, JSON.stringify(pos));
+}
+function setFindEnabled(on){
+  if(!btnFindVehicle) return;
+  btnFindVehicle.disabled = !on;
+  btnFindVehicle.setAttribute("aria-disabled", (!on).toString());
+}
+function initVehicleUI(){
+  if(!btnSaveVehicle && !btnFindVehicle) return;
+
+  const v = loadVehicle();
+  setFindEnabled(!!(v && typeof v.lat==="number" && typeof v.lon==="number"));
+
+  if(btnSaveVehicle){
+    btnSaveVehicle.addEventListener("click", async ()=>{
+      if(!("geolocation" in navigator)){
+        setStatus("Géolocalisation indisponible sur ce téléphone.", true);
+        return;
+      }
+      setStatus("Enregistrement du véhicule…");
+      navigator.geolocation.getCurrentPosition((p)=>{
+        const lat = p.coords.latitude;
+        const lon = p.coords.longitude;
+        const payload = {lat, lon, ts: Date.now()};
+        saveVehiclePos(payload);
+        setFindEnabled(true);
+        setStatus("Véhicule enregistré ✅");
+      }, (err)=>{
+        console.error(err);
+        const msg = (err && err.code === 1)
+          ? "Autorise la localisation pour enregistrer le véhicule."
+          : "Impossible de récupérer ta position.";
+        setStatus(msg, true);
+      }, {enableHighAccuracy:true, timeout:12000, maximumAge:10000});
+    });
+  }
+
+  if(btnFindVehicle){
+    btnFindVehicle.addEventListener("click", ()=>{
+      const v = loadVehicle();
+      if(!v || typeof v.lat!=="number" || typeof v.lon!=="number"){
+        setFindEnabled(false);
+        setStatus("Aucun véhicule enregistré. Clique d’abord sur “Enregistrer véhicule”.", true);
+        return;
+      }
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lon}&travelmode=walking`;
+      window.open(url, "_blank");
+    });
+  }
+}
+
 async function wire(){
   await ensureSeedLoaded();
 
@@ -1056,6 +1024,9 @@ async function wire(){
   if(navWazeBtn) navWazeBtn.addEventListener("click", ()=>setNavApp("waze"));
   if(navMapsBtn) navMapsBtn.addEventListener("click", ()=>setNavApp("maps"));
   updateNavUI();
+
+  // Parking véhicule
+  initVehicleUI();
 
   modalClose.addEventListener("click", closeModal);
   modalCancel.addEventListener("click", closeModal);
