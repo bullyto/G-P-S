@@ -13,6 +13,10 @@ const LS_LAST_CITY = "tournee_v7_last_city";
 // Choix navigation : "waze" (par défaut) ou "maps" (Google Maps en mode piéton)
 const LS_NAV_APP = "tournee_v7_nav_app";
 
+
+// Position du véhicule (GPS) — enregistrer / retrouver
+const LS_VEHICLE_POS = "tournee_v7_vehicle_pos";
+
 const LS_SEED_VERSION = "tournee_v7_seed_version";
 const SEED_VERSION = "seed_2025-12-17_1";
 const SEED_URL = "./data/adresses.csv";
@@ -29,6 +33,10 @@ const btnExportTxt = document.getElementById("btnExportTxt");
 // Toggle navigation (en haut)
 const navWazeBtn = document.getElementById("navWaze");
 const navMapsBtn = document.getElementById("navMaps");
+// Véhicule : sauvegarde / retrouver GPS
+const btnSaveVehicle = document.getElementById("btnSaveVehicle");
+const btnFindVehicle = document.getElementById("btnFindVehicle");
+const vehicleInfo = document.getElementById("vehicleInfo");
 
 // modal
 const modal = document.getElementById("modal");
@@ -554,6 +562,11 @@ function setNavApp(v){
   const val = (String(v||"").toLowerCase() === "maps") ? "maps" : "waze";
   localStorage.setItem(LS_NAV_APP, val);
   updateNavUI();
+
+  // Véhicule GPS
+  if(btnSaveVehicle) btnSaveVehicle.addEventListener("click", saveVehicleLocation);
+  if(btnFindVehicle) btnFindVehicle.addEventListener("click", findVehicle);
+  updateVehicleUI();
 }
 
 function updateNavUI(){
@@ -606,6 +619,91 @@ function mapsWalkUrl(a){
   // URL stable (PWA / iOS / Android) : Google Maps Directions API
   const dest = encodeURIComponent(formatLine(a));
   return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
+}
+
+function loadVehiclePos(){
+  try{
+    return JSON.parse(localStorage.getItem(LS_VEHICLE_POS) || "null");
+  }catch(_){ return null; }
+}
+
+function saveVehiclePos(pos){
+  localStorage.setItem(LS_VEHICLE_POS, JSON.stringify(pos));
+}
+
+function formatVehicleInfo(pos){
+  if(!pos) return "Aucune position enregistrée.";
+  const d = new Date(pos.ts || Date.now());
+  const acc = (typeof pos.acc === "number" && isFinite(pos.acc)) ? ` ±${Math.round(pos.acc)}m` : "";
+  return `Enregistré le ${d.toLocaleString("fr-FR")}${acc}`;
+}
+
+function updateVehicleUI(){
+  const pos = loadVehiclePos();
+  if(vehicleInfo) vehicleInfo.textContent = formatVehicleInfo(pos);
+  if(btnFindVehicle) btnFindVehicle.disabled = !pos;
+}
+
+function requestCurrentPosition(){
+  return new Promise((resolve, reject)=>{
+    if(!("geolocation" in navigator)) return reject(new Error("GPS indisponible sur cet appareil."));
+    navigator.geolocation.getCurrentPosition(
+      p => resolve(p),
+      err => reject(err),
+      { enableHighAccuracy:true, timeout:12000, maximumAge: 3000 }
+    );
+  });
+}
+
+function mapsWalkToLatLonUrl(originLatLon, destLatLon){
+  const dest = encodeURIComponent(`${destLatLon.lat},${destLatLon.lon}`);
+  const url = new URL("https://www.google.com/maps/dir/?api=1");
+  url.searchParams.set("destination", `${destLatLon.lat},${destLatLon.lon}`);
+  url.searchParams.set("travelmode", "walking");
+  if(originLatLon){
+    url.searchParams.set("origin", `${originLatLon.lat},${originLatLon.lon}`);
+  }
+  return url.toString();
+}
+
+async function saveVehicleLocation(){
+  try{
+    setStatus("GPS : localisation du véhicule…");
+    const p = await requestCurrentPosition();
+    const pos = {
+      lat: p.coords.latitude,
+      lon: p.coords.longitude,
+      acc: p.coords.accuracy,
+      ts: Date.now()
+    };
+    saveVehiclePos(pos);
+    updateVehicleUI();
+    setStatus("Véhicule enregistré ✅");
+  }catch(e){
+    setStatus((e && e.message) ? e.message : "Impossible d'obtenir le GPS.", true);
+  }
+}
+
+async function findVehicle(){
+  const dest = loadVehiclePos();
+  if(!dest){
+    setStatus("Aucune position véhicule enregistrée.", true);
+    return;
+  }
+
+  // On tente d'obtenir la position actuelle pour avoir un itinéraire complet (origine->véhicule).
+  // Si refus / échec, on ouvre quand même Maps vers la destination.
+  let origin = null;
+  try{
+    setStatus("GPS : ta position actuelle…");
+    const p = await requestCurrentPosition();
+    origin = { lat: p.coords.latitude, lon: p.coords.longitude };
+  }catch(_){
+    // ignore
+  }
+
+  setStatus("Ouverture de Google Maps (piéton)…");
+  window.location.href = mapsWalkToLatLonUrl(origin, dest);
 }
 
 function render(){
