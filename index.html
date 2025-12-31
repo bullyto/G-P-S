@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1220" />
   <title>Tournée V7</title>
 
-  <!-- Optionnel si tu as déjà ton manifest/icons -->
+  <!-- (optionnel) -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" type="image/png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -14,18 +14,19 @@
   <style>
     :root{
       --bg:#0b1220; --card:#121a2b; --txt:#e8eefc; --muted:#a7b3d3;
-      --good:#38d39f; --bad:#ff5c7a; --line:rgba(255,255,255,.08);
+      --good:#38d39f; --bad:#ff5c7a; --line:rgba(255,255,255,.10);
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
     header{
       position:sticky;top:0;z-index:10;
-      background:rgba(11,18,32,.92);backdrop-filter:blur(8px);
+      background:rgba(11,18,32,.92);backdrop-filter:blur(10px);
       border-bottom:1px solid var(--line);
       padding:12px;
     }
     .wrap{max-width:980px;margin:0 auto;padding:14px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .spacer{flex:1}
     .btn{
       border:1px solid var(--line);
       background:var(--card);
@@ -33,12 +34,13 @@
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
-      font-weight:700;
+      font-weight:800;
+      user-select:none;
     }
     .btn:active{transform:translateY(1px)}
-    .btn.primary{border-color:rgba(56,211,159,.35)}
-    .btn.danger{border-color:rgba(255,92,122,.35)}
-    .btn.small{padding:8px 10px;font-weight:800}
+    .btn.primary{border-color:rgba(56,211,159,.40)}
+    .btn.danger{border-color:rgba(255,92,122,.40)}
+    .btn.small{padding:8px 10px;font-weight:900}
     .toggle{display:flex;gap:8px}
     .toggle .btn.active{outline:2px solid rgba(56,211,159,.35)}
     select,input{
@@ -46,12 +48,13 @@
       border:1px solid var(--line);border-radius:12px;
       padding:10px 12px;
     }
-    #status{margin-top:8px;color:var(--muted);font-weight:700}
-    #cityMeta{margin:10px 0;color:var(--muted);font-weight:700}
+    #status{margin-top:8px;color:var(--muted);font-weight:800}
+    #cityMeta{margin:10px 0;color:var(--muted);font-weight:800}
+
     ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
     .addr{
       display:grid;
-      grid-template-columns:40px 1fr auto;
+      grid-template-columns:44px 1fr auto;
       gap:10px;
       align-items:center;
       background:var(--card);
@@ -60,25 +63,27 @@
       padding:10px;
     }
     .num{
-      width:40px;height:40px;border-radius:12px;
+      width:44px;height:44px;border-radius:14px;
       display:flex;align-items:center;justify-content:center;
       background:rgba(255,255,255,.06);
-      font-weight:900;
+      font-weight:1000;
     }
-    .line1{font-weight:900}
+    .addrmain{min-width:0}
+    .tapzone{cursor:pointer}
+    .line1{font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .line2{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
     .badge{
       display:inline-flex;gap:6px;align-items:center;
       padding:6px 10px;border-radius:999px;
       border:1px solid var(--line);
       color:var(--muted);
-      font-weight:800;
+      font-weight:900;
       font-size:12px;
     }
     .badge.ok{color:var(--txt)}
     .actions{display:flex;gap:8px}
     .iconbtn{
-      width:40px;height:40px;border-radius:12px;
+      width:44px;height:44px;border-radius:14px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       color:var(--txt);
@@ -88,9 +93,7 @@
 
     /* Modal */
     .hidden{display:none}
-    #modalBackdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;
-    }
+    #modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50}
     #modal{
       position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
       width:min(92vw,520px);
@@ -103,32 +106,43 @@
     #modal h3{margin:6px 0 12px 0}
     .field{display:grid;gap:6px;margin-bottom:10px}
     .modalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+    /* Petit look “parking véhicule” */
+    .vehiculeBox{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+      padding:10px;
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      margin-top:10px;
+    }
+    .vehiculeBox .hint{color:var(--muted);font-weight:800}
   </style>
 </head>
 
 <body>
   <header>
     <div class="wrap">
-      <div class="row" style="justify-content:space-between">
-        <div class="row">
-          <select id="citySelect"></select>
+      <div class="row">
+        <select id="citySelect" aria-label="Choisir une ville"></select>
 
-          <button class="btn small primary" id="btnOptimize">⚡ Optimiser</button>
-          <button class="btn small" id="btnAdd">➕ Ajouter</button>
-          <button class="btn small" id="btnExportTxt">🧾 Export TXT</button>
+        <button class="btn small primary" id="btnOptimize" type="button">⚡ Optimiser</button>
+        <button class="btn small" id="btnAdd" type="button">➕ Ajouter</button>
+        <button class="btn small" id="btnExportTxt" type="button">🧾 Export TXT</button>
+
+        <div class="spacer"></div>
+
+        <div class="toggle" aria-label="Navigation">
+          <button class="btn small active" id="navWaze" type="button">Waze</button>
+          <button class="btn small" id="navMaps" type="button">Google Maps (piéton)</button>
         </div>
+      </div>
 
-        <div class="row">
-          <!-- ✅ NOUVEAU : Parking véhicule -->
-          <button class="btn small primary" id="btnSaveVehiclePos">📍 Enregistrer véhicule</button>
-          <button class="btn small" id="btnFindVehiclePos">🧭 Retrouver véhicule</button>
-
-          <!-- Toggle navigation -->
-          <div class="toggle">
-            <button class="btn small active" id="navWaze" type="button">Waze</button>
-            <button class="btn small" id="navMaps" type="button">Google Maps (piéton)</button>
-          </div>
-        </div>
+      <!-- ✅ AJOUT : Parking véhicule -->
+      <div class="vehiculeBox">
+        <button class="btn small primary" id="btnSaveVehiclePos" type="button">📍 Enregistrer véhicule</button>
+        <button class="btn small" id="btnFindVehiclePos" type="button">🧭 Retrouver véhicule</button>
+        <span class="hint">Astuce : enregistre quand tu te gares, puis “Retrouver” te lance Maps à pied.</span>
       </div>
 
       <div id="status"></div>
@@ -145,7 +159,7 @@
   <div id="modal" class="hidden" role="dialog" aria-modal="true">
     <div class="row" style="justify-content:space-between">
       <h3 id="modalTitle">Ajouter une adresse</h3>
-      <button class="iconbtn" id="modalClose" title="Fermer">✕</button>
+      <button class="iconbtn" id="modalClose" title="Fermer" type="button">✕</button>
     </div>
 
     <div class="field">
@@ -169,7 +183,7 @@
     </div>
   </div>
 
-  <!-- ✅ Ton JS complet (celui que tu as collé) -->
+  <!-- Ton JS (Tournée V7) -->
   <script src="./app.js"></script>
 </body>
 </html>
