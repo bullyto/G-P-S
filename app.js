@@ -12,6 +12,42 @@ const LS_LAST_CITY = "tournee_v7_last_city";
 
 // Position véhicule (parking)
 const LS_VEHICLE = "tournee_v7_vehicle";
+const LS_START_MODE = "tournee_start_mode"; // "mairie" | "vehicle"
+
+/* ==== Stockage sûr (navigation privée / quota) ==== */
+const __LS = (()=>{
+  try{ return window.localStorage; }catch(e){ return null; }
+})();
+let LS_OK = true;
+try{
+  if(!__LS) throw new Error("no localStorage");
+  const __k="__ls_test__";
+  __LS.setItem(__k,"1");
+  __LS.removeItem(__k);
+}catch(e){
+  LS_OK = false;
+}
+function lsGet(key){
+  try{ return __LS ? __LS.getItem(key) : null; }catch(e){ return null; }
+}
+function lsSet(key, value){
+  try{ if(!__LS) throw new Error("no localStorage"); __LS.setItem(key, value); return true; }catch(e){ LS_OK = false; return false; }
+}
+function lsRemove(key){
+  try{ if(!__LS) throw new Error("no localStorage"); __LS.removeItem(key); return true; }catch(e){ LS_OK = false; return false; }
+}
+let __lsWarned = false;
+function warnIfNoStorage(){
+  if(!LS_OK && !__lsWarned){
+    __lsWarned = true;
+    setStatus("⚠️ Navigation privée: stockage limité (cache/positions non persistants).", true);
+  }
+}
+
+
+
+}
+
 
 // Choix navigation : "waze" (par défaut) ou "maps" (Google Maps en mode piéton)
 const LS_NAV_APP = "tournee_v7_nav_app";
@@ -69,7 +105,8 @@ function loadData(){
   return sanitizeData(JSON.parse(JSON.stringify(INITIAL_DATA)));
 }
 function saveData(){
-  localStorage.setItem(LS_KEY, JSON.stringify(data));
+  const ok = localStorage.setItem(LS_KEY, JSON.stringify(data));
+  if(!ok) warnIfNoStorage();
 }
 
 function loadMairies(){
@@ -190,6 +227,10 @@ async function ensureSeedLoaded(){
 function setStatus(msg, isError=false){
   statusEl.textContent = msg || "";
   statusEl.style.color = isError ? "var(--bad)" : "var(--muted)";
+}
+
+
+
 }
 
 function stripAccents(s){
@@ -946,7 +987,8 @@ function loadVehicle(){
   try{ return JSON.parse(localStorage.getItem(LS_VEHICLE) || "null"); }catch(e){ return null; }
 }
 function saveVehiclePos(pos){
-  localStorage.setItem(LS_VEHICLE, JSON.stringify(pos));
+  const ok = localStorage.setItem(LS_VEHICLE, JSON.stringify(pos));
+  if(!ok) warnIfNoStorage();
 }
 
 function fmtStationTs(ts){
@@ -973,6 +1015,37 @@ function updateVehicleHint(){
   }
 }
 
+
+
+function getStartMode(){
+  const v = lsGet(LS_START_MODE);
+  return (v==="vehicle" || v==="mairie") ? v : "mairie";
+}
+function setStartMode(mode){
+  const m = (mode==="vehicle") ? "vehicle" : "mairie";
+  const ok = lsSet(LS_START_MODE, m);
+  if(!ok) warnIfNoStorage();
+  updateStartModeUI();
+}
+function updateStartModeUI(){
+  const m = getStartMode();
+  const btnM = document.getElementById("btnStartMairie");
+  const btnV = document.getElementById("btnStartVehicle");
+  if(btnM) btnM.classList.toggle("is-active", m==="mairie");
+  if(btnV) btnV.classList.toggle("is-active", m==="vehicle");
+  // si pas de véhicule, on force mairie
+  const v = loadVehicle();
+  const hasVehicle = !!(v && typeof v.lat==="number" && typeof v.lon==="number");
+  if(btnV) btnV.disabled = !hasVehicle;
+  if(m==="vehicle" && !hasVehicle){
+    // force fallback mairie
+    if(LS_OK) lsSet(LS_START_MODE, "mairie");
+    if(btnM) btnM.classList.add("is-active");
+    if(btnV) btnV.classList.remove("is-active");
+  }
+}
+
+
 // Point de départ (mairie par défaut, véhicule si enregistré)
 async function getAnchor(city){
   const v = loadVehicle();
@@ -994,6 +1067,7 @@ function initVehicleUI(){
   const v = loadVehicle();
   setFindEnabled(!!(v && typeof v.lat==="number" && typeof v.lon==="number"));
   updateVehicleHint();
+        updateStartModeUI();
 
   if(btnSaveVehicle){
     btnSaveVehicle.addEventListener("click", async ()=>{
@@ -1020,6 +1094,7 @@ function initVehicleUI(){
         saveVehiclePos(payload);
         setFindEnabled(true);
         updateVehicleHint();
+        updateStartModeUI();
         setStatus("Véhicule enregistré ✅");
       }, (err)=>{
         console.error(err);
@@ -1037,6 +1112,7 @@ function initVehicleUI(){
       if(!v || typeof v.lat!=="number" || typeof v.lon!=="number"){
         setFindEnabled(false);
         updateVehicleHint();
+        updateStartModeUI();
         setStatus("Aucun véhicule enregistré. Clique d’abord sur “Enregistrer véhicule”.", true);
         return;
       }
