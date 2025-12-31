@@ -46,8 +46,6 @@ function warnIfNoStorage(){
 
 
 
-}
-
 
 // Choix navigation : "waze" (par défaut) ou "maps" (Google Maps en mode piéton)
 const LS_NAV_APP = "tournee_v7_nav_app";
@@ -229,9 +227,6 @@ function setStatus(msg, isError=false){
   statusEl.style.color = isError ? "var(--bad)" : "var(--muted)";
 }
 
-
-
-}
 
 function stripAccents(s){
   // Compatible (évite les Unicode property escapes \p{…} qui plantent sur certains Android)
@@ -1078,9 +1073,9 @@ function initVehicleUI(){
           ? `Une position véhicule est déjà enregistrée (stationné à ${t}).
 
 Remplacer cette position ?`
-          : "Une position véhicule est déjà enregistrée.
+          : `Une position véhicule est déjà enregistrée.
 
-Remplacer cette position ?";
+Remplacer cette position ?`;
         if(!confirm(msg)){
           setStatus("Position véhicule conservée.");
           return;
