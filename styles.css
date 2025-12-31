@@ -555,3 +555,41 @@ select:focus, input:focus{border-color: rgba(100,160,255,.55)}
 .kmrow .badge{
   font-size: 11px;
 }
+
+/* Layout tweak v10.17 : actions empilées à droite + plus de place pour le contenu */
+.addr{
+  grid-template-columns: 44px 1fr 52px !important; /* num | contenu | actions serrées */
+}
+.actions{
+  flex-direction: column !important;
+  gap: 8px !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+}
+.iconbtn{
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 16px !important;
+  margin: 0 !important;
+}
+
+/* Typo demandée */
+.addr .line1{
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+.addr .badge.citypill{
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+.kmrow .badge{
+  font-size: 9px !important;
+  padding: 4px 8px !important;
+}
+/* Statut un poil compact */
+.addr .badge.todo,
+.addr .badge.done{
+  font-size: 11px !important;
+  padding: 5px 9px !important;
+}
