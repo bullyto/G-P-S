@@ -1043,12 +1043,18 @@ function updateStartModeUI(){
 
 // Point de départ (mairie par défaut, véhicule si enregistré)
 async function getAnchor(city){
-  const v = loadVehicle();
-  if(v && typeof v.lat==="number" && typeof v.lon==="number"){
-    return { lat: v.lat, lon: v.lon, display: "Véhicule", source: "vehicle", ts: v.ts || null };
+  // Choix du point de départ :
+  // - par défaut : mairie de la ville sélectionnée
+  // - si mode "vehicle" et véhicule enregistré : véhicule
+  const mode = (typeof getStartMode === "function") ? getStartMode() : "mairie";
+  if(mode === "vehicle"){
+    const v = loadVehicle();
+    if(v && typeof v.lat === "number" && typeof v.lon === "number"){
+      return { lat: v.lat, lon: v.lon, display: "Véhicule", source: "vehicle", ts: v.ts || null };
+    }
   }
-  const anchor = await getAnchor(city);
-  return { lat: anchor.lat, lon: anchor.lon, display: mairie.display || "Mairie", source: "mairie", ts: null };
+  const mairie = await getMairie(city);
+  return { lat: mairie.lat, lon: mairie.lon, display: mairie.display || "Mairie", source: "mairie", ts: null };
 }
 
 function setFindEnabled(on){
@@ -1056,16 +1062,28 @@ function setFindEnabled(on){
   btnFindVehicle.disabled = !on;
   btnFindVehicle.setAttribute("aria-disabled", (!on).toString());
 }
+function bindOnce(el, key, handler){
+  if(!el) return;
+  if(el.dataset && el.dataset[key]==="1") return;
+  if(el.dataset) el.dataset[key] = "1";
+  el.addEventListener("click", handler);
+}
+
 function initVehicleUI(){
   if(!btnSaveVehicle && !btnFindVehicle) return;
 
   const v = loadVehicle();
   setFindEnabled(!!(v && typeof v.lat==="number" && typeof v.lon==="number"));
   updateVehicleHint();
-        updateStartModeUI();
+  updateStartModeUI();
+
+  const btnStartMairie = document.getElementById("btnStartMairie");
+  const btnStartVehicle = document.getElementById("btnStartVehicle");
+  bindOnce(btnStartMairie, "boundStartMairie", ()=> setStartMode("mairie"));
+  bindOnce(btnStartVehicle, "boundStartVehicle", ()=> setStartMode("vehicle"));
 
   if(btnSaveVehicle){
-    btnSaveVehicle.addEventListener("click", async ()=>{
+    bindOnce(btnSaveVehicle, "boundSaveVehicle", async ()=>{
       const existing = loadVehicle();
       if(existing && typeof existing.lat==="number" && typeof existing.lon==="number"){
         const t = fmtStationTs(existing.ts);
@@ -1093,7 +1111,12 @@ Remplacer cette position ?`;
         saveVehiclePos(payload);
         setFindEnabled(true);
         updateVehicleHint();
-        updateStartModeUI();
+  updateStartModeUI();
+
+  const btnStartMairie = document.getElementById("btnStartMairie");
+  const btnStartVehicle = document.getElementById("btnStartVehicle");
+  bindOnce(btnStartMairie, "boundStartMairie", ()=> setStartMode("mairie"));
+  bindOnce(btnStartVehicle, "boundStartVehicle", ()=> setStartMode("vehicle"));
         setStatus("Véhicule enregistré ✅");
       }, (err)=>{
         console.error(err);
@@ -1106,12 +1129,17 @@ Remplacer cette position ?`;
   }
 
   if(btnFindVehicle){
-    btnFindVehicle.addEventListener("click", ()=>{
+    bindOnce(btnFindVehicle, "boundFindVehicle", ()=>{
       const v = loadVehicle();
       if(!v || typeof v.lat!=="number" || typeof v.lon!=="number"){
         setFindEnabled(false);
         updateVehicleHint();
-        updateStartModeUI();
+  updateStartModeUI();
+
+  const btnStartMairie = document.getElementById("btnStartMairie");
+  const btnStartVehicle = document.getElementById("btnStartVehicle");
+  bindOnce(btnStartMairie, "boundStartMairie", ()=> setStartMode("mairie"));
+  bindOnce(btnStartVehicle, "boundStartVehicle", ()=> setStartMode("vehicle"));
         setStatus("Aucun véhicule enregistré. Clique d’abord sur “Enregistrer véhicule”.", true);
         return;
       }
