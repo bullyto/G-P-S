@@ -1,10 +1,11 @@
-
 /* Tournée V7 — géocodage + ordre par distance à la mairie
    - Géocode "Mairie <Ville>" (cache local)
    - Géocode chaque adresse à l'ajout / modification
    - Bouton "Optimiser" : géocode les manquantes (avec biais autour de la mairie) + trie
 */
-const INITIAL_DATA = {"Alénya":[{"street":"16 Avenue de Perpignan","postcode":"66200","city":"Alénya","done":false}],"Argelès-sur-Mer":[{"street":"2 Rue André Malraux","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"5 BIS Rue Frédéric Mistral","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"5 Impasse Edmond Brazes","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"5 Rue des Timoniers","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"5 Rue Frédéric Mistral","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"5 Rue Simona Gay","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"6 Rue Claude Salvy","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"9 Impasse. des Huppes","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"9 Place. Raimond de Tatzó","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"10 Rue de la Concorde","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"10 Rue du Vercors","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"10 Rue Jean Jacques Rousseau","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"11 Rue Bernard Berenger","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"12 Rue de Bel Air","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"14 Rue Paul Claudel","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"25 Avenue Molière","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"58 Rue Jean Moulin","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"78 BIS Avenue du 8 Mai 1945","postcode":"66700","city":"Argelès-sur-Mer","done":false},{"street":"755 Avenue du Tech","postcode":"66700","city":"Argelès-sur-Mer","done":false}],"Bages":[{"street":"2 Rue André Chénier","postcode":"66670","city":"Bages","done":false},{"street":"7 Rue François Arago","postcode":"66670","city":"Bages","done":false}],"Baho":[{"street":"16 Rue Neuve","postcode":"66540","city":"Baho","done":false},{"street":"17 Rue des Eaux Vives","postcode":"66540","city":"Baho","done":false},{"street":"17 Rue des Eaux Vives Baho","postcode":"66540","city":"Baho","done":false},{"street":"17 Rue du Pardal","postcode":"66540","city":"Baho","done":false},{"street":"56 Avenue des Pyrénées","postcode":"66540","city":"Baho","done":false}],"Baixas":[{"street":"2 Impasse du Bail","postcode":"66390","city":"Baixas","done":false},{"street":"47 Rue Dom. Brial","postcode":"66390","city":"Baixas","done":false}],"Banyuls-dels-Aspres":[{"street":"3 Rue du Canigou","postcode":"66300","city":"Banyuls-dels-Aspres","done":false},{"street":"4 Rue des Alberes","postcode":"66300","city":"Banyuls-dels-Aspres","done":false}],"Bompas":[{"street":"2 Rue Saint Etienne","postcode":"66430","city":"Bompas","done":false},{"street":"2 Rue St Etienne","postcode":"66430","city":"Bompas","done":false},{"street":"4 Avenue des Olivier","postcode":"66430","city":"Bompas","done":false},{"street":"4 Avenue des Oliviers","postcode":"66430","city":"Bompas","done":false},{"street":"5 Rue Henri Salvador","postcode":"66430","city":"Bompas","done":false},{"street":"13 Rue de Paradis","postcode":"66430","city":"Bompas","done":false},{"street":"18 Rue de Bretagne","postcode":"66430","city":"Bompas","done":false},{"street":"24 Avenue du Haut Vernet","postcode":"66430","city":"Bompas","done":false},{"street":"25 Avenue de la Tet","postcode":"66430","city":"Bompas","done":false},{"street":"27 Rue Marechal Foch","postcode":"66430","city":"Bompas","done":false},{"street":"50 Avenue de la Salanque","postcode":"66430","city":"Bompas","done":false},{"street":"1150 Chemin de Charlemagne","postcode":"66430","city":"Bompas","done":false}],"Brouilla":[{"street":"4 Rue de la Tramontane","postcode":"66200","city":"Brouilla","done":false}],"Cabestany":[{"street":"1 Rue du Comité de Baixas","postcode":"66100","city":"Cabestany","done":false},{"street":"3 Rue Georges Clemenceau","postcode":"66330","city":"Cabestany","done":false},{"street":"9 Rue du 17ème Régiment d'infanterie","postcode":"66330","city":"Cabestany","done":false},{"street":"12 BIS Cours Raymond de Miraval","postcode":"66330","city":"Cabestany","done":false},{"street":"14 Rue des Géraniums","postcode":"66330","city":"Cabestany","done":false},{"street":"15 Rue Fernand Grenier","postcode":"66330","city":"Cabestany","done":false},{"street":"17 Allée du Comité de Baixas","postcode":"66330","city":"Cabestany","done":false},{"street":"17 Rue du Muscat","postcode":"66330","city":"Cabestany","done":false},{"street":"23 Rue Edouart Vaillant","postcode":"66330","city":"Cabestany","done":false},{"street":"27 Avenue de Provence","postcode":"66330","city":"Cabestany","done":false},{"street":"38 Rue Fernand Grenier","postcode":"66330","city":"Cabestany","done":false}],"Canet-en-Roussillon":[{"street":"1 Rue de la Liberté","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"1 Rue du Danemark","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"1 Rue du Danemark et de Suisse","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"1 Rue Île de France","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"3 Avenue. de Toulouse","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"3 Rue D’italie","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"8 Avenue des Haut de Canet","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"11 Impasse. Hyacinthe Rigaud","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"12 Rue Déodat de Sévérac","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"14 Rue du Pressoir","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"15 Rue des Roses","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"16 Avenue Guy Drut Clap Cine","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"18 Impasse. du Lion","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"25 Boulevard de la Jetee","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"28 Avenue. de Catalogne","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"31 Avenue. de Capestang","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"34 Boulevards Tixador","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"34BIS Avenue des Floralies","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"41 Promenade. de la Côte Vermeille","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"46 Rue de la Marinade","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"46 Rue de la Marinade","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"48 Avenue des Coteaux","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"72 Avenue des Côteaux","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"104 Promenade. de la Côte Vermeille","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"140 Avenue des Hauts de Canet","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"141 Avenue de Haut de Canet","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"142 Avenue des Hauts de Canet Malibu","postcode":"66140","city":"Canet-en-Roussillon","done":false},{"street":"6 Avenue Sauvy","postcode":"66240","city":"Canet-en-Roussillon","done":false}],"Canohès":[{"street":"13 Rue Auguste Estrade","postcode":"66000","city":"Canohès","done":false},{"street":"1 Rue Éliane Thibault Comelade","postcode":"66680","city":"Canohès","done":false},{"street":"1 Rue Salvador Dali","postcode":"66680","city":"Canohès","done":false},{"street":"2 Impasse. Joseph Sebastia Pons","postcode":"66680","city":"Canohès","done":false},{"street":"2 Rue des Vignes","postcode":"66680","city":"Canohès","done":false},{"street":"3 Rue des Mimosas","postcode":"66680","city":"Canohès","done":false},{"street":"5TER Rue de la Pourtalade","postcode":"66680","city":"Canohès","done":false},{"street":"8 Avenue. El Crusat","postcode":"66680","city":"Canohès","done":false},{"street":"8 Rue Edmond Brazes","postcode":"66680","city":"Canohès","done":false},{"street":"10 Rue de la Poste","postcode":"66680","city":"Canohès","done":false},{"street":"10 Rue du 11 Novembre","postcode":"66680","city":"Canohès","done":false},{"street":"12 Rue Pompeu Fabra","postcode":"66680","city":"Canohès","done":false}],"Cases-de-Pène":[{"street":"6 Traverse de Baixas","postcode":"66600","city":"Cases-de-Pène","done":false}],"Claira":[{"street":"8 Rue Maréchal Joffre","postcode":"66530","city":"Claira","done":false},{"street":"9 Rue Saint Maurice","postcode":"66530","city":"Claira","done":false},{"street":"9 Rue St Maurice","postcode":"66530","city":"Claira","done":false},{"street":"14 Rue Charles Trenet","postcode":"66530","city":"Claira","done":false},{"street":"14 Rue Saint Narcisses","postcode":"66530","city":"Claira","done":false},{"street":"19 Rue Claudie Haignere","postcode":"66530","city":"Claira","done":false},{"street":"21 Rue Hélène Boucher","postcode":"66530","city":"Claira","done":false},{"street":"22 Rue de l'anguille","postcode":"66530","city":"Claira","done":false},{"street":"38 Chemin du Mas Bordas","postcode":"66530","city":"Claira","done":false},{"street":"38 Chemin du Mas Bordas Maison 16 E","postcode":"66530","city":"Claira","done":false},{"street":"38 Chemin du Mas Bordas Maison 16e","postcode":"66530","city":"Claira","done":false},{"street":"38 Chemin du Mas Bordas Maison 16e 66530 Claira","postcode":"66530","city":"Claira","done":false}],"Collioure":[{"street":"2 Rue du Puit Saint Dominique","postcode":"66190","city":"Collioure","done":false}],"Corneilla-del-Vercol":[{"street":"3 Rue des Lauriers","postcode":"66200","city":"Corneilla-del-Vercol","done":false},{"street":"4 Rue Simone de Beauvoir","postcode":"66200","city":"Corneilla-del-Vercol","done":false},{"street":"8 Allée du Canigou","postcode":"66200","city":"Corneilla-del-Vercol","done":false}],"Corneilla-La-Rivière":[{"street":"113 Nord Route Nationale","postcode":"66550","city":"Corneilla-La-Rivière","done":false},{"street":"113 Route Nationale","postcode":"66550","city":"Corneilla-La-Rivière","done":false}],"Elne":[{"street":"1 Rue Josep de la Trinxeria","postcode":"66200","city":"Elne","done":false},{"street":"2 Rue du Colonel Arnaud Beltram","postcode":"66200","city":"Elne","done":false},{"street":"3 Blvd du Passage de la Baneta","postcode":"66200","city":"Elne","done":false},{"street":"4 Rue du Conflent","postcode":"66200","city":"Elne","done":false},{"street":"6 Rue du Moulin","postcode":"66200","city":"Elne","done":false},{"street":"8 Route National","postcode":"66200","city":"Elne","done":false},{"street":"10 Rue de la Chicane","postcode":"66200","city":"Elne","done":false},{"street":"10 Rue de la Gendarmerie","postcode":"66200","city":"Elne","done":false},{"street":"16 Rue Georges Brassens","postcode":"66200","city":"Elne","done":false},{"street":"16 Rue Joseph Planes","postcode":"66200","city":"Elne","done":false},{"street":"28 Rue de la Gangue","postcode":"66200","city":"Elne","done":false},{"street":"35 Rue Rosa Paks","postcode":"66200","city":"Elne","done":false},{"street":"35 Rue Rosa Parks","postcode":"66200","city":"Elne","done":false}],"Espira-de-l'Agly":[{"street":"3BIS Rue Pasteur Impasse Rouget de l'isle","postcode":"66600","city":"Espira-de-l'Agly","done":false},{"street":"4 Rue Ull de la Mola","postcode":"66600","city":"Espira-de-l'Agly","done":false},{"street":"6 Rue du Dr Coste","postcode":"66600","city":"Espira-de-l'Agly","done":false},{"street":"11 Rue du Quatorze Juillet","postcode":"66600","city":"Espira-de-l'Agly","done":false}],"Fourques":[{"street":"5 Carrer Gran","postcode":"66300","city":"Fourques","done":false}],"Latour-Bas-Elne":[{"street":"1 Rue de la Tramontane","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"1 Rue du Carignan","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"10 Rue de la Poste","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"17 Rue Saint-pierre","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"18 Rue du Grenache","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"22 Avenue. de Saint-cyprien","postcode":"66200","city":"Latour-Bas-Elne","done":false},{"street":"30 Rue de la Tramontane","postcode":"66200","city":"Latour-Bas-Elne","done":false}],"Le Barcarès":[{"street":"2 Impasse. des Petits Loups","postcode":"66420","city":"Le Barcarès","done":false},{"street":"3 Avenue. du Racou","postcode":"66420","city":"Le Barcarès","done":false},{"street":"5 Avenue. des Dosses","postcode":"66420","city":"Le Barcarès","done":false},{"street":"5 Avenue. Dominica","postcode":"66420","city":"Le Barcarès","done":false},{"street":"10 Rue du Mas de la Grêle","postcode":"66420","city":"Le Barcarès","done":false},{"street":"12 Quai des Pyrénées","postcode":"66420","city":"Le Barcarès","done":false},{"street":"36 Rue des Lamparos","postcode":"66420","city":"Le Barcarès","done":false},{"street":"111 Boulevard du 14 Juillet","postcode":"66420","city":"Le Barcarès","done":false}],"Le Soler":[{"street":"13 Rue Marechal Joffre","postcode":"66170","city":"Le Soler","done":false},{"street":"2 Rue des Genévriers","postcode":"66270","city":"Le Soler","done":false},{"street":"4 Rue Joan Cayrol","postcode":"66270","city":"Le Soler","done":false},{"street":"8 Rue Albert Bausil","postcode":"66270","city":"Le Soler","done":false},{"street":"13 Rue du Maréchal Joffre","postcode":"66270","city":"Le Soler","done":false},{"street":"13 Rue Marechal Joffre","postcode":"66270","city":"Le Soler","done":false},{"street":"15 Rue Léon Blum","postcode":"66270","city":"Le Soler","done":false},{"street":"23 Rue des Ormes","postcode":"66270","city":"Le Soler","done":false},{"street":"35 Rue du Conflent","postcode":"66270","city":"Le Soler","done":false},{"street":"61 Avenue Jean Jaures","postcode":"66270","city":"Le Soler","done":false}],"Llupia":[{"street":"4 Rue de la Têt","postcode":"66300","city":"Llupia","done":false}],"Millas":[{"street":"3 Rue Jean Bourrat","postcode":"66170","city":"Millas","done":false},{"street":"26 Carrer Del Rec","postcode":"66170","city":"Millas","done":false},{"street":"64 Avenue. Jean Jaurès","postcode":"66170","city":"Millas","done":false}],"Perpignan":[{"street":"1 Allée Jose Maria de Heredia","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Avenue du Docteur Torreill","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Avenue. du Général de Gaulle","postcode":"66000","city":"Perpignan","done":false},{"street":"1 BIS Place Justin Bardou Job","postcode":"66000","city":"Perpignan","done":false},{"street":"1 BIS Rue du Figuier","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Impasse Marivaux","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue Alain Lesage","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue Claude Clodion","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue des Commeres","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue des Glaieuls","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue des Œillets","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue François Delcos","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue Henri Fantin Latour","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue Henri Verneuil","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Rue Simone Gay","postcode":"66000","city":"Perpignan","done":false},{"street":"02 Rue Fabriques d'en Nabot","postcode":"66000","city":"Perpignan","done":false},{"street":"2 BIS Rue Porte D’assaut","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Boulevard Clemenceau","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Boulevard Georges Clemenceau","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Cours Lazare Escarguel","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Cours Palmarole","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Abbe Albert Cazes","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue des Frères Rosny","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue du Lieutenant Farriol","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Général Labedoyer","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Jean de la Fontaine","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Jules Dumont d'urville","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Louis le Vau","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Marché au Bestiaux","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Pascal Marie Agasse","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Prte d'assaut","postcode":"66000","city":"Perpignan","done":false},{"street":"2 Rue Zenobe Gramme","postcode":"66000","city":"Perpignan","done":false},{"street":"3 et 5 Rue Paul Morand","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Frédéric Bartholdi","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Impasse de la Houle","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Anny de Pous","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Bonaventura Carlos Aribaud","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue des Augustins","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Henri","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Jean Payra","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Jean Philippe Rameau","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Jordi Carbonell I Tries","postcode":"66000","city":"Perpignan","done":false},{"street":"3 Rue Luc Dagobert","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Impasse. de Setcases","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Impasse du Setcas","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Impasse du Setcasse","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Impasse du Setecass","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Antoine de Condorcet","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue de Latour Bas Elne","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Eugène Flachat","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Gustave Effel","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Gustave Eiffel","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue la Petite Real","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Neuve","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Paul Séjourné","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Robert Planquette","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Sainte-magdeleine","postcode":"66000","city":"Perpignan","done":false},{"street":"4 Rue Yves Allégret","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Avenue du Parc des Expositions","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Place. Alain Gerbault","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue Alain Gerbault","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue de la Révolution Française","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue des Sérénade","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue des Tuileries","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue du Tuileries","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue Michel de Montaigne","postcode":"66000","city":"Perpignan","done":false},{"street":"5 Rue Paul Morand Perpignan","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Avenue Docteur Jean Louis Torreille","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Avenue Dr Jean Louis Torreilles","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Avenue. Rosette Blanc","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Boulevard du Roussillon","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Impasse Ducup","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Impasse Ducup de Saint-paul","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rie Pierre de Montreuil","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue de la Corse","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue du Cygne","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue du Puyvalador","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue Jean Baptiste Chardin","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue Petite la Real","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue Pierre de Montreuil","postcode":"66000","city":"Perpignan","done":false},{"street":"6 Rue Stendhal","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue Charles de Montesquieu","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue de la Main de Fer","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue de Leglise la Real","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue de Venise","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue de Vienne","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue Mercè Rodoreda","postcode":"66000","city":"Perpignan","done":false},{"street":"7 Rue Raymond Pitet","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Avenue de Grande Bretagne","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Avenue Joe Rosenthal","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue de la Cloche d'or","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue des Rouges Gorges","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue du Chantier","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue Élie Delcros","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue Jules Romains","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue Saint-françois de Paule","postcode":"66000","city":"Perpignan","done":false},{"street":"8 Rue Santiago Russinol","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Boulevard Kenedy Perpignan","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Jean Baptiste Greuse","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Rue Charles Guerhardt","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Rue Commandant Ernest Soubielle","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Rue Edouard Bourdet","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Rue Henry Aragon","postcode":"66000","city":"Perpignan","done":false},{"street":"9 Rue Jean Racine","postcode":"66000","city":"Perpignan","done":false},{"street":"10 Boulevard du Roussillon","postcode":"66000","city":"Perpignan","done":false},{"street":"10 Résidence des 4 Cazals","postcode":"66000","city":"Perpignan","done":false},{"street":"10 Rue Grande la Réal","postcode":"66000","city":"Perpignan","done":false},{"street":"10 Rue Honoré de Balzac","postcode":"66000","city":"Perpignan","done":false},{"street":"10 Rue Louis de Bonnefoy","postcode":"66000","city":"Perpignan","done":false},{"street":"11 Avenue. de Grande Bretagne","postcode":"66000","city":"Perpignan","done":false},{"street":"11 Avenue Marcelin Albert","postcode":"66000","city":"Perpignan","done":false},{"street":"11 Avenue Ribere","postcode":"66000","city":"Perpignan","done":false},{"street":"11 Rue de la Tour de la Massane","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Adolphe Monticelli","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Alphonse Simon","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Claude Bernard","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue du Fer À Cheval","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Grande la Réal","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Madame de Staël","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Noël Coypel","postcode":"66000","city":"Perpignan","done":false},{"street":"12 Rue Pompeu Fabra","postcode":"66000","city":"Perpignan","done":false},{"street":"13 Rue de Cadaques","postcode":"66000","city":"Perpignan","done":false},{"street":"13 Rue Paul Riquet","postcode":"66000","city":"Perpignan","done":false},{"street":"13 Rue Petite la Monnaie","postcode":"66000","city":"Perpignan","done":false},{"street":"14 Chemin. du Sacré Cœur","postcode":"66000","city":"Perpignan","done":false},{"street":"14 Impasse Alphonse Daudet","postcode":"66000","city":"Perpignan","done":false},{"street":"14 Rue de Valencia","postcode":"66000","city":"Perpignan","done":false},{"street":"14 Rue Gabriel Fauré","postcode":"66000","city":"Perpignan","done":false},{"street":"14 Rue Henri Fantin Latour","postcode":"66000","city":"Perpignan","done":false},{"street":"15 All. de Bacchus","postcode":"66000","city":"Perpignan","done":false},{"street":"15 Avenue. Marcel Aime","postcode":"66000","city":"Perpignan","done":false},{"street":"15 Rue du Général Legrand","postcode":"66000","city":"Perpignan","done":false},{"street":"15 Rue General Legrand","postcode":"66000","city":"Perpignan","done":false},{"street":"15 Rue Jacques Mach","postcode":"66000","city":"Perpignan","done":false},{"street":"16 Rue Benoît Fourneyron","postcode":"66000","city":"Perpignan","done":false},{"street":"16 Rue Ernest Hemingway","postcode":"66000","city":"Perpignan","done":false},{"street":"16 Rue Hyacinte Rigaud","postcode":"66000","city":"Perpignan","done":false},{"street":"16 Rue Jean de la Fontaine","postcode":"66000","city":"Perpignan","done":false},{"street":"16 Rue Stendhal","postcode":"66000","city":"Perpignan","done":false},{"street":"17 Rue Floréal St Assicle","postcode":"66000","city":"Perpignan","done":false},{"street":"17 Rue Luc de Vauvenargues","postcode":"66000","city":"Perpignan","done":false},{"street":"17 Rue Marc Seguin","postcode":"66000","city":"Perpignan","done":false},{"street":"18 Avenue de Prades","postcode":"66000","city":"Perpignan","done":false},{"street":"18 Boulevard Georges Clémenceau","postcode":"66000","city":"Perpignan","done":false},{"street":"18 Rue Grande la Monnaie","postcode":"66000","city":"Perpignan","done":false},{"street":"18 Rue Léo Delibes","postcode":"66000","city":"Perpignan","done":false},{"street":"19 Rue Aristide Maillol","postcode":"66000","city":"Perpignan","done":false},{"street":"19 Rue Honoré de Balzac","postcode":"66000","city":"Perpignan","done":false},{"street":"19 Rue Sébastien Vauban","postcode":"66000","city":"Perpignan","done":false},{"street":"20 Espace Méditerrané","postcode":"66000","city":"Perpignan","done":false},{"street":"20 Rue Pascal Marie Agasse","postcode":"66000","city":"Perpignan","done":false},{"street":"20 Rue René Leriche","postcode":"66000","city":"Perpignan","done":false},{"street":"21 Avenue Joffre","postcode":"66000","city":"Perpignan","done":false},{"street":"21 Esplanade Méditerranée","postcode":"66000","city":"Perpignan","done":false},{"street":"21 Rue des Augustins","postcode":"66000","city":"Perpignan","done":false},{"street":"21 Rue des Jeunes Années","postcode":"66000","city":"Perpignan","done":false},{"street":"21 Rue Grande la Monnaie","postcode":"66000","city":"Perpignan","done":false},{"street":"22 Rue Petite la Réal","postcode":"66000","city":"Perpignan","done":false},{"street":"23 Rue des Vignes","postcode":"66000","city":"Perpignan","done":false},{"street":"23 Rue Jean Michel Chevotet","postcode":"66000","city":"Perpignan","done":false},{"street":"23 Rue Vincente Blasco Ibanez","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Avenue de Cerdagne","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Avenue. Emile Roudayre","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Cours Lazare Escarguel","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Rue de Cerdagne","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Rue Theodore Chasseriau","postcode":"66000","city":"Perpignan","done":false},{"street":"24 Rue Valentin Magnan","postcode":"66000","city":"Perpignan","done":false},{"street":"25 Carrer Alexandre Josep Oliva","postcode":"66000","city":"Perpignan","done":false},{"street":"25 Quai Vauban","postcode":"66000","city":"Perpignan","done":false},{"street":"25 Rue de Paris","postcode":"66000","city":"Perpignan","done":false},{"street":"25 Rue Nicolas Poussin","postcode":"66000","city":"Perpignan","done":false},{"street":"26 Avenue Alfred Sauvy (cité Universitaire Côté Pente)","postcode":"66000","city":"Perpignan","done":false},{"street":"26 Rue de la Tour de la Massane","postcode":"66000","city":"Perpignan","done":false},{"street":"26 Rue des Trois Journées","postcode":"66000","city":"Perpignan","done":false},{"street":"26 Rue Joseph Cabrit","postcode":"66000","city":"Perpignan","done":false},{"street":"27 Rue Georges Bizet","postcode":"66000","city":"Perpignan","done":false},{"street":"28 Rue des Metezeau","postcode":"66000","city":"Perpignan","done":false},{"street":"29 Rue de Venise","postcode":"66000","city":"Perpignan","done":false},{"street":"29 Rue Pascal Marie Agasse","postcode":"66000","city":"Perpignan","done":false},{"street":"32 Boulevard John-fitzgerald Kennedy","postcode":"66000","city":"Perpignan","done":false},{"street":"32 Place Hyacinthe Rigaud","postcode":"66000","city":"Perpignan","done":false},{"street":"32 Rue Jacques Trefouel","postcode":"66000","city":"Perpignan","done":false},{"street":"33 Rue des Amandiers","postcode":"66000","city":"Perpignan","done":false},{"street":"34 Avenue Général Leclerc","postcode":"66000","city":"Perpignan","done":false},{"street":"35 Rue Alfred Bachelet","postcode":"66000","city":"Perpignan","done":false},{"street":"35 Rue Grande la Réal","postcode":"66000","city":"Perpignan","done":false},{"street":"36 Rue Charles Gerhardt","postcode":"66000","city":"Perpignan","done":false},{"street":"37 Rue Grande la Réal","postcode":"66000","city":"Perpignan","done":false},{"street":"38 Rue Jean Alcover","postcode":"66000","city":"Perpignan","done":false},{"street":"38BIS Rue Jean Alcover","postcode":"66000","city":"Perpignan","done":false},{"street":"40 Avenue. des Eaux Vives","postcode":"66000","city":"Perpignan","done":false},{"street":"40 Rue Cabrit","postcode":"66000","city":"Perpignan","done":false},{"street":"41 Boulevard John Fitzgerald Kennedy","postcode":"66000","city":"Perpignan","done":false},{"street":"41 Rambla de l'occitanie","postcode":"66000","city":"Perpignan","done":false},{"street":"41 Rue Han Coll","postcode":"66000","city":"Perpignan","done":false},{"street":"44 Avenue du Palais des Expositions","postcode":"66000","city":"Perpignan","done":false},{"street":"44 Rue André Chouraqui","postcode":"66000","city":"Perpignan","done":false},{"street":"45 Rue Auguste Mariette","postcode":"66000","city":"Perpignan","done":false},{"street":"47 Rue de l'emporda","postcode":"66000","city":"Perpignan","done":false},{"street":"47 Rue René Antoine de Réaumur","postcode":"66000","city":"Perpignan","done":false},{"street":"51 Avenue du Palais des Expositions","postcode":"66000","city":"Perpignan","done":false},{"street":"52 BIS Boulevard Aristide Briand","postcode":"66000","city":"Perpignan","done":false},{"street":"56 Boulevard Aristide Briand","postcode":"66000","city":"Perpignan","done":false},{"street":"57 Avenue du Général de Gaulle","postcode":"66000","city":"Perpignan","done":false},{"street":"59 Rue Alexandre Ansaldi","postcode":"66000","city":"Perpignan","done":false},{"street":"61 Avenue du Comdant Soubielle","postcode":"66000","city":"Perpignan","done":false},{"street":"61 Avenue du Commandant Ernest Soubielle","postcode":"66000","city":"Perpignan","done":false},{"street":"61 Rue Jean","postcode":"66000","city":"Perpignan","done":false},{"street":"61 Rue Jean Baptiste Lulli","postcode":"66000","city":"Perpignan","done":false},{"street":"64 Avenue Jean Giono","postcode":"66000","city":"Perpignan","done":false},{"street":"66 Avenue du Champ de Mars","postcode":"66000","city":"Perpignan","done":false},{"street":"67 All. des Cyprès","postcode":"66000","city":"Perpignan","done":false},{"street":"69 Rue Alexandre Ansaldi","postcode":"66000","city":"Perpignan","done":false},{"street":"71 Rue Joan Maragall","postcode":"66000","city":"Perpignan","done":false},{"street":"73 Avenue du Docteur Albert Schweitzer","postcode":"66000","city":"Perpignan","done":false},{"street":"85 Chemin. de la Poudrière","postcode":"66000","city":"Perpignan","done":false},{"street":"91 Rue Pascal Marie Grasse","postcode":"66000","city":"Perpignan","done":false},{"street":"92 Avenue. Commandant Ernest Soubielle","postcode":"66000","city":"Perpignan","done":false},{"street":"97 Avenue. de Prades","postcode":"66000","city":"Perpignan","done":false},{"street":"99 Avenue Docteur Albert Schweitzer","postcode":"66000","city":"Perpignan","done":false},{"street":"109 Rue Jean Bullant","postcode":"66000","city":"Perpignan","done":false},{"street":"140 Avenue. du Palais des Expositions","postcode":"66000","city":"Perpignan","done":false},{"street":"141BIS Avenue Maréchal Joffre","postcode":"66000","city":"Perpignan","done":false},{"street":"146 Avenue Maréchal Joffre","postcode":"66000","city":"Perpignan","done":false},{"street":"183 Avenue de Maréchal Joffre","postcode":"66000","city":"Perpignan","done":false},{"street":"193 Avenue Abbé Pierre Perpignan","postcode":"66000","city":"Perpignan","done":false},{"street":"200 Cami Joan Biosca","postcode":"66000","city":"Perpignan","done":false},{"street":"280 Chemin du Mas Ducp","postcode":"66000","city":"Perpignan","done":false},{"street":"300 Avenue Charles Deperet","postcode":"66000","city":"Perpignan","done":false},{"street":"308 Chemin. du Mas Bresson","postcode":"66000","city":"Perpignan","done":false},{"street":"350 Chemin de Château Roussillon","postcode":"66000","city":"Perpignan","done":false},{"street":"358 Chemin. du Mas Ducup","postcode":"66000","city":"Perpignan","done":false},{"street":"807 Chemin de Soleil Roi","postcode":"66000","city":"Perpignan","done":false},{"street":"807 Chemin. du Soleil Roy","postcode":"66000","city":"Perpignan","done":false},{"street":"817 Boulevard Marius Berlier","postcode":"66000","city":"Perpignan","done":false},{"street":"955 Avenue. Julien Panchot","postcode":"66000","city":"Perpignan","done":false},{"street":"1098 Avenue Eole Tecnosud 2","postcode":"66000","city":"Perpignan","done":false},{"street":"1 Avenue. de Banyuls-sur-mer","postcode":"66100","city":"Perpignan","done":false},{"street":"1 Rue de la Preste","postcode":"66100","city":"Perpignan","done":false},{"street":"1 Rue des Ardennes","postcode":"66100","city":"Perpignan","done":false},{"street":"2 Avenue. du Cap Béar","postcode":"66100","city":"Perpignan","done":false},{"street":"2 Rue des Terrasses","postcode":"66100","city":"Perpignan","done":false},{"street":"2 Rue François Broussais","postcode":"66100","city":"Perpignan","done":false},{"street":"3 Rond-point du Parc des Sports","postcode":"66100","city":"Perpignan","done":false},{"street":"3 Rue de Corneilla Del Vercol","postcode":"66100","city":"Perpignan","done":false},{"street":"3 Rue Paul Morand","postcode":"66100","city":"Perpignan","done":false},{"street":"4 Avenue d'amélie les Bains","postcode":"66100","city":"Perpignan","done":false},{"street":"4 Avenue. Robert Emmanuel Brousse","postcode":"66100","city":"Perpignan","done":false},{"street":"4 Rue des Ardennes Perpignan","postcode":"66100","city":"Perpignan","done":false},{"street":"4 Rue des Trabucayres","postcode":"66100","city":"Perpignan","done":false},{"street":"4 Rue Neuve","postcode":"66100","city":"Perpignan","done":false},{"street":"5 Place. Charles Hermite","postcode":"66100","city":"Perpignan","done":false},{"street":"5 Rue Jeanne Jugan","postcode":"66100","city":"Perpignan","done":false},{"street":"5 Rue Notre Dame du Coral","postcode":"66100","city":"Perpignan","done":false},{"street":"6 Avenue de la Côté Radieuse","postcode":"66100","city":"Perpignan","done":false},{"street":"6 Rue du Pas du Loup","postcode":"66100","city":"Perpignan","done":false},{"street":"8 Avenue Pierre Cambres","postcode":"66100","city":"Perpignan","done":false},{"street":"8 Boulevard Henri Poincaré","postcode":"66100","city":"Perpignan","done":false},{"street":"8 Rue des Dragons","postcode":"66100","city":"Perpignan","done":false},{"street":"10 Rambla de l'occitanie","postcode":"66100","city":"Perpignan","done":false},{"street":"10 Rue du Vilar","postcode":"66100","city":"Perpignan","done":false},{"street":"10 Rue Gustave Roussy","postcode":"66100","city":"Perpignan","done":false},{"street":"10 Rue Paul Claudel","postcode":"66100","city":"Perpignan","done":false},{"street":"14 Square. Maillol","postcode":"66100","city":"Perpignan","done":false},{"street":"15 Rue de Taulis","postcode":"66100","city":"Perpignan","done":false},{"street":"16 Avenue du Tech","postcode":"66100","city":"Perpignan","done":false},{"street":"16 Rambla de l'occitanieaa","postcode":"66100","city":"Perpignan","done":false},{"street":"17 Rue Henri de Turenne","postcode":"66100","city":"Perpignan","done":false},{"street":"20 Rue René Leriche","postcode":"66100","city":"Perpignan","done":false},{"street":"21 Boulevard Jf Kennedy","postcode":"66100","city":"Perpignan","done":false},{"street":"21 Boulevard John Fitzgérald Kennedy","postcode":"66100","city":"Perpignan","done":false},{"street":"23 Avenue. Paul Alduy","postcode":"66100","city":"Perpignan","done":false},{"street":"24 Chemin de Saint Roch","postcode":"66100","city":"Perpignan","done":false},{"street":"25 Rue de Taulis","postcode":"66100","city":"Perpignan","done":false},{"street":"29 Avenue Paul Alduy","postcode":"66100","city":"Perpignan","done":false},{"street":"29 Rue Grande la Monnaie","postcode":"66100","city":"Perpignan","done":false},{"street":"35 Rue de Taulis","postcode":"66100","city":"Perpignan","done":false},{"street":"41 Boulevard John Fitzgerald Kennedy","postcode":"66100","city":"Perpignan","done":false},{"street":"41 Rue de Taulis","postcode":"66100","city":"Perpignan","done":false},{"street":"43 Rue des Ménestrels","postcode":"66100","city":"Perpignan","done":false},{"street":"44 Rue Andre Chouraqui","postcode":"66100","city":"Perpignan","done":false},{"street":"56 Boulevard Aristide Briand Perpignan","postcode":"66100","city":"Perpignan","done":false},{"street":"63 Chemin. de la Passio Vella","postcode":"66100","city":"Perpignan","done":false},{"street":"64 Avenue Georges Guynemer","postcode":"66100","city":"Perpignan","done":false}],"Perpignan (Fr - )":[{"street":"58 Rue Maurice Barres","postcode":"66000","city":"Perpignan (Fr - )","done":false}],"Peyrestortes":[{"street":"3 Place de la République","postcode":"66600","city":"Peyrestortes","done":false}],"Pezilla La Riviere":[{"street":"4 Rue 11 Novenmère","postcode":"66370","city":"Pezilla La Riviere","done":false},{"street":"4 Rue du 11 Novembre 1918","postcode":"66370","city":"Pezilla La Riviere","done":false},{"street":"26 Rue des Aires","postcode":"66370","city":"Pezilla La Riviere","done":false}],"Pézilla-La-Rivière":[{"street":"5 Rond-point des Kiwis","postcode":"66370","city":"Pézilla-La-Rivière","done":false},{"street":"11 Rue Portal d'amont","postcode":"66370","city":"Pézilla-La-Rivière","done":false},{"street":"15 Rue Portal d'amont","postcode":"66370","city":"Pézilla-La-Rivière","done":false},{"street":"17 Rue Paul Astor","postcode":"66370","city":"Pézilla-La-Rivière","done":false},{"street":"25 Rue de l'égalité","postcode":"66370","city":"Pézilla-La-Rivière","done":false}],"Pia":[{"street":"1 BIS Chemin des Vignes","postcode":"66380","city":"Pia","done":false},{"street":"1 Impasse des Capucines","postcode":"66380","city":"Pia","done":false},{"street":"1 Rue des Iris","postcode":"66380","city":"Pia","done":false},{"street":"1 Rue Iris","postcode":"66380","city":"Pia","done":false},{"street":"2 Rue des Pins","postcode":"66380","city":"Pia","done":false},{"street":"2 Rue Joseph Sébastien Pons","postcode":"66380","city":"Pia","done":false},{"street":"3 Rue des Oranger","postcode":"66380","city":"Pia","done":false},{"street":"4 Rue Louise Michel","postcode":"66380","city":"Pia","done":false},{"street":"5 Rue de Gentianes","postcode":"66380","city":"Pia","done":false},{"street":"6 Rue Costabonne","postcode":"66380","city":"Pia","done":false},{"street":"7 Rue des Cormorans","postcode":"66380","city":"Pia","done":false},{"street":"8 Rue des Citronniers","postcode":"66380","city":"Pia","done":false},{"street":"13 C Rue. du Muscat Ressidence L Aramon","postcode":"66380","city":"Pia","done":false},{"street":"16 Rue du Serpolet","postcode":"66380","city":"Pia","done":false},{"street":"20 Chemin. des Charettes","postcode":"66380","city":"Pia","done":false},{"street":"20 Rue de la Llabanere","postcode":"66380","city":"Pia","done":false},{"street":"25 Rue du Chenin Blanc","postcode":"66380","city":"Pia","done":false},{"street":"25 Rue du Clos des Palmiers","postcode":"66380","city":"Pia","done":false},{"street":"30 Avenue. du Stade","postcode":"66380","city":"Pia","done":false},{"street":"32 Route de Perpignan","postcode":"66380","city":"Pia","done":false},{"street":"42 Chemin de l'étang Long","postcode":"66380","city":"Pia","done":false},{"street":"61 Rue du Clos des Palmiers","postcode":"66380","city":"Pia","done":false},{"street":"90 Chemin. des Vignes","postcode":"66380","city":"Pia","done":false}],"Pollestres":[{"street":"1 Rue Prairial","postcode":"66000","city":"Pollestres","done":false},{"street":"4 Place de L Eglise","postcode":"66000","city":"Pollestres","done":false},{"street":"2 Avenue Laure Manaudou","postcode":"66450","city":"Pollestres","done":false},{"street":"4 Place de L Eglise","postcode":"66450","city":"Pollestres","done":false},{"street":"4 Place de la Eglise","postcode":"66450","city":"Pollestres","done":false},{"street":"7 Allée Felicia Ballanger","postcode":"66450","city":"Pollestres","done":false},{"street":"16 Avenue de Canohes","postcode":"66450","city":"Pollestres","done":false},{"street":"16 Cité le Moulin","postcode":"66450","city":"Pollestres","done":false}],"Ponteilla":[{"street":"2 Rue des Fauvettes","postcode":"66300","city":"Ponteilla","done":false}],"Port Barcarès":[{"street":"9 Avenue de la Grande Plage Apt E12","postcode":"66420","city":"Port Barcarès","done":false}],"Port Vendres":[{"street":"5 Boulevard du 8 Mai 1945","postcode":"66660","city":"Port Vendres","done":false}],"Port-Vendres":[{"street":"5 Boulevard du Huit Mai 1945","postcode":"66660","city":"Port-Vendres","done":false}],"Réz De Chaussee":[{"street":"8 Rue Marceau","postcode":"66600","city":"Réz De Chaussee","done":false}],"Rivesaltes":[{"street":"24 Rue Michel Boher","postcode":"66000","city":"Rivesaltes","done":false},{"street":"2 Rue de L Orphéon","postcode":"66600","city":"Rivesaltes","done":false},{"street":"2 Rue de la République","postcode":"66600","city":"Rivesaltes","done":false},{"street":"3 Rue Ambroise Paré","postcode":"66600","city":"Rivesaltes","done":false},{"street":"4 Rue Edgard Quinet","postcode":"66600","city":"Rivesaltes","done":false},{"street":"7 Avenue Alfred Sauvy","postcode":"66600","city":"Rivesaltes","done":false},{"street":"7 Avenue de Romani","postcode":"66600","city":"Rivesaltes","done":false},{"street":"7 Impasse. de Bruxelles","postcode":"66600","city":"Rivesaltes","done":false},{"street":"9 Avenue Louis Blanc","postcode":"66600","city":"Rivesaltes","done":false},{"street":"10 Rue Danton","postcode":"66600","city":"Rivesaltes","done":false},{"street":"13 Avenue. Gambetta","postcode":"66600","city":"Rivesaltes","done":false},{"street":"18 Impasse. de Bruxelles","postcode":"66600","city":"Rivesaltes","done":false},{"street":"19 Avenue. de la Mourere","postcode":"66600","city":"Rivesaltes","done":false},{"street":"19 Avenue. Louis Blanc","postcode":"66600","city":"Rivesaltes","done":false},{"street":"21 Avenue de Romani","postcode":"66600","city":"Rivesaltes","done":false},{"street":"21 Rue de Romani","postcode":"66600","city":"Rivesaltes","done":false},{"street":"27 Avenue Louis Blanc","postcode":"66600","city":"Rivesaltes","done":false},{"street":"27 Rue Jean Jaurès","postcode":"66600","city":"Rivesaltes","done":false},{"street":"41 Rue du 4 Septembre","postcode":"66600","city":"Rivesaltes","done":false},{"street":"42 Rue de la République","postcode":"66600","city":"Rivesaltes","done":false},{"street":"42 Rue Van Gogh","postcode":"66600","city":"Rivesaltes","done":false}],"Saint Laurent De La Salanque":[{"street":"18 Rue Duquesne","postcode":"66000","city":"Saint Laurent De La Salanque","done":false}],"Saint-André":[{"street":"7 Impasse du Conflent","postcode":"66690","city":"Saint-André","done":false}],"Saint-Cyprien":[{"street":"15 Rue du Docteur Schweitzer","postcode":"66200","city":"Saint-Cyprien","done":false},{"street":"214 Rue de Suede","postcode":"66570","city":"Saint-Cyprien","done":false},{"street":"1 Rue Pierre Mac Orlan","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"2 Impasse. Paul Pégar","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"2 Rue Jean Sébastien Bach","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"4 Rue Gaston Chereau","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"5 Rue Eugène Delacroix","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"7 Impasse. Jean Bordes","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"8 Rue de Condorcet Ibis","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"10 Rue Condorcet","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"10 Rue Guillaume Appolinaire","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"12 Rue Sainte-beuve","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"13 Rue Henry Bordeaux","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"14 Quai Arthur Rimbaud","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"15 Boulevard François Desnoyer","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"15 Rue Vaugelas","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"22 Rue Lautréamont","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"27 Avenue Francois Desnoyer","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"28 Avenue. Armand Lanoux","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"30 Place. Henri Bergson","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"39 Rue Docteur Schweitzer","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"39 Rue Docteure Schweitzer","postcode":"66750","city":"Saint-Cyprien","done":false},{"street":"75 Boulevard François Desnoyer","postcode":"66750","city":"Saint-Cyprien","done":false}],"Saint-Estève":[{"street":"1 Rue de la Sardane","postcode":"66240","city":"Saint-Estève","done":false},{"street":"3 Place. Pierre de Coubertin","postcode":"66240","city":"Saint-Estève","done":false},{"street":"5 Rue du Pla Guillem","postcode":"66240","city":"Saint-Estève","done":false},{"street":"10 Rue de Champagne","postcode":"66240","city":"Saint-Estève","done":false},{"street":"14 Route de Perpignan","postcode":"66240","city":"Saint-Estève","done":false},{"street":"15 Rue Olympe de Gouges","postcode":"66240","city":"Saint-Estève","done":false},{"street":"20 Rue de Sydney","postcode":"66240","city":"Saint-Estève","done":false},{"street":"28 BIS Avenue du Général de Gaulle.","postcode":"66240","city":"Saint-Estève","done":false},{"street":"31 Rue François Mitterrand","postcode":"66240","city":"Saint-Estève","done":false},{"street":"38 Avéue Gilbert Brutus","postcode":"66240","city":"Saint-Estève","done":false},{"street":"42 Mas Cot","postcode":"66240","city":"Saint-Estève","done":false},{"street":"42 Rue du Fournas","postcode":"66240","city":"Saint-Estève","done":false},{"street":"55 Boulevard du Canigou","postcode":"66240","city":"Saint-Estève","done":false}],"Saint-Féliu-d'Avall":[{"street":"6 BIS Rue de l'agly","postcode":"66170","city":"Saint-Féliu-d'Avall","done":false},{"street":"7 BIS Impasse de la Côte","postcode":"66170","city":"Saint-Féliu-d'Avall","done":false},{"street":"7 Rue de la Côte","postcode":"66170","city":"Saint-Féliu-d'Avall","done":false},{"street":"11 Rue du Presbytère","postcode":"66170","city":"Saint-Féliu-d'Avall","done":false}],"Saint-Hippolyte":[{"street":"3 Avenue Jeanne d'arc","postcode":"66510","city":"Saint-Hippolyte","done":false},{"street":"12 Rue du 14 Juillet","postcode":"66510","city":"Saint-Hippolyte","done":false}],"Saint-Nazaire":[{"street":"1 Rue du Littoral","postcode":"66570","city":"Saint-Nazaire","done":false},{"street":"12 Rue de l'alicante","postcode":"66570","city":"Saint-Nazaire","done":false}],"Sainte-Marie-la-Mer":[{"street":"1 Rue des Corbières","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"1 Rue Pasteur","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"3 BIS Rue Derrière la Muraille","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"13 Résidence les Ondines","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"17 Rue des Chênes","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"19 Rue des","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"21 Rue des Bougainvilliers","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false},{"street":"36 Rés les Sablettes","postcode":"66470","city":"Sainte-Marie-la-Mer","done":false}],"Saleilles":[{"street":"2 Avenue. Arthur Conte","postcode":"66280","city":"Saleilles","done":false},{"street":"3 Rue de la Serdagne","postcode":"66280","city":"Saleilles","done":false},{"street":"6 Avenue. Gino Massarotto","postcode":"66280","city":"Saleilles","done":false}],"St Marie La Mer":[{"street":"13 Résidence les Ondines","postcode":"66470","city":"St Marie La Mer","done":false}],"Théza":[{"street":"1 Boulevard de l'oratori","postcode":"66200","city":"Théza","done":false},{"street":"7 Rue des Palmiers","postcode":"66200","city":"Théza","done":false},{"street":"11 Rue des Ormes","postcode":"66200","city":"Théza","done":false}],"Thuir":[{"street":"3 Rue du Bélier","postcode":"66300","city":"Thuir","done":false},{"street":"4 Impasse Anatole France","postcode":"66300","city":"Thuir","done":false},{"street":"6 Rue de la Cellera","postcode":"66300","city":"Thuir","done":false},{"street":"7 Avenue des Sports","postcode":"66300","city":"Thuir","done":false},{"street":"11 Rue Albert Bausil","postcode":"66300","city":"Thuir","done":false},{"street":"36 Rue Marcel Pagnol","postcode":"66300","city":"Thuir","done":false}],"Torreilles":[{"street":"1 BIS Avenue des Pyrénées","postcode":"66440","city":"Torreilles","done":false},{"street":"2 Avenue du Languedoc","postcode":"66440","city":"Torreilles","done":false},{"street":"3 BIS Rue George Sand","postcode":"66440","city":"Torreilles","done":false},{"street":"12 Lotissement les Patios","postcode":"66440","city":"Torreilles","done":false},{"street":"12 Rue du Canigou","postcode":"66440","city":"Torreilles","done":false}],"Toulouges":[{"street":"1 Place. de la République","postcode":"66350","city":"Toulouges","done":false},{"street":"3 Eue du Beffroi","postcode":"66350","city":"Toulouges","done":false},{"street":"3 Rue du Beffroi","postcode":"66350","city":"Toulouges","done":false},{"street":"6 Rue Mère Térésa","postcode":"66350","city":"Toulouges","done":false},{"street":"8 Rue du Beffroi","postcode":"66350","city":"Toulouges","done":false},{"street":"44 B Rue de Gerone Res le Pret Catalan 2","postcode":"66350","city":"Toulouges","done":false}],"Tresserre":[{"street":"7 Rue du Canigou","postcode":"66300","city":"Tresserre","done":false}],"Trouillas":[{"street":"2 Rue du Pou de la Pigne","postcode":"66300","city":"Trouillas","done":false},{"street":"15 Rue du Jasmin","postcode":"66300","city":"Trouillas","done":false},{"street":"19 Rue D Alger","postcode":"66300","city":"Trouillas","done":false}],"Villelongue-de-la-Salanque":[{"street":"4 Avenue du Littoral","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"11 Rue","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"12 Rue du Fer À Cheval","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"14 Avenue Perpignan","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"15 Rue des Chardonnerets","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"18 Rue Saint Lucie","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false},{"street":"58 Avenue. du Littoral","postcode":"66410","city":"Villelongue-de-la-Salanque","done":false}],"Villeneuve La Rivière":[{"street":"4 Rue Neuve","postcode":"66000","city":"Villeneuve La Rivière","done":false}],"Villeneuve-de-la-Raho":[{"street":"1 BIS Mas Saint Paul Chemin du Mas Auriol","postcode":"66180","city":"Villeneuve-de-la-Raho","done":false},{"street":"3 Place de la Couloumine","postcode":"66180","city":"Villeneuve-de-la-Raho","done":false},{"street":"5 Rue des Mimosas","postcode":"66180","city":"Villeneuve-de-la-Raho","done":false},{"street":"8 Avenue. Salvador Dali","postcode":"66180","city":"Villeneuve-de-la-Raho","done":false}]};
+
+// ⚠️ LAISSE TON INITIAL_DATA EXACTEMENT COMME IL EST (inchangé)
+const INITIAL_DATA = INITIAL_DATA; // <-- (ne pas mettre cette ligne chez toi : garde ton bloc INITIAL_DATA original)
 
 const LS_KEY = "tournee_v7_data";
 const LS_MAIRIES = "tournee_v7_mairies";
@@ -17,6 +18,8 @@ const LS_SEED_VERSION = "tournee_v7_seed_version";
 const SEED_VERSION = "seed_2025-12-17_1";
 const SEED_URL = "./data/adresses.csv";
 
+// ✅ NOUVEAU : stockage position véhicule
+const LS_VEHICLE_POS = "tournee_v7_vehicle_pos";
 
 const citySelect = document.getElementById("citySelect");
 const addrList = document.getElementById("addrList");
@@ -29,6 +32,10 @@ const btnExportTxt = document.getElementById("btnExportTxt");
 // Toggle navigation (en haut)
 const navWazeBtn = document.getElementById("navWaze");
 const navMapsBtn = document.getElementById("navMaps");
+
+// ✅ NOUVEAU : boutons véhicule
+const btnSaveVehiclePos = document.getElementById("btnSaveVehiclePos");
+const btnFindVehiclePos = document.getElementById("btnFindVehiclePos");
 
 // modal
 const modal = document.getElementById("modal");
@@ -70,6 +77,88 @@ function loadMairies(){
   }catch(e){ return {}; }
 }
 function saveMairies(m){ localStorage.setItem(LS_MAIRIES, JSON.stringify(m)); }
+
+
+// ✅ NOUVEAU : helpers véhicule (GPS)
+function getVehiclePos(){
+  try{
+    return JSON.parse(localStorage.getItem(LS_VEHICLE_POS) || "null");
+  }catch(e){
+    return null;
+  }
+}
+function setVehiclePos(obj){
+  localStorage.setItem(LS_VEHICLE_POS, JSON.stringify(obj));
+}
+function formatTs(ts){
+  try{
+    return new Date(ts).toLocaleString("fr-FR");
+  }catch(_){
+    return "";
+  }
+}
+function getCurrentPositionP(options){
+  return new Promise((resolve, reject)=>{
+    if(!("geolocation" in navigator)){
+      reject(new Error("Géolocalisation non supportée sur cet appareil."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  });
+}
+function mapsWalkToCoordsUrl(lat, lon){
+  // Google Maps : itinéraire à pied vers coords (destination)
+  const dest = encodeURIComponent(`${lat},${lon}`);
+  return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
+}
+async function saveVehiclePosition(){
+  try{
+    setStatus("GPS véhicule… demande d'autorisation / localisation…");
+    const pos = await getCurrentPositionP({
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 0
+    });
+
+    const obj = {
+      lat: pos.coords.latitude,
+      lon: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      ts: Date.now()
+    };
+    setVehiclePos(obj);
+    setStatus(`Position véhicule enregistrée ✅ (±${Math.round(obj.accuracy)}m • ${formatTs(obj.ts)})`);
+  }catch(e){
+    const msg = (e && e.code === 1)
+      ? "Refus GPS : autorise la localisation pour enregistrer le véhicule."
+      : (e && e.code === 2)
+        ? "GPS indisponible : réessaie dehors / active la localisation."
+        : (e && e.code === 3)
+          ? "GPS trop lent : réessaie."
+          : (e && e.message ? e.message : "Erreur GPS.");
+    setStatus(msg, true);
+  }
+}
+async function findVehicle(){
+  const v = getVehiclePos();
+  if(!v || typeof v.lat !== "number" || typeof v.lon !== "number"){
+    setStatus("Aucune position véhicule enregistrée. Clique d'abord sur « Enregistrer véhicule ».", true);
+    return;
+  }
+
+  // Optionnel : petite confirmation si vieux
+  const ageMin = Math.round((Date.now() - (v.ts||0)) / 60000);
+  const infoAge = isFinite(ageMin) ? ` (enregistré il y a ~${ageMin} min)` : "";
+
+  if(ageMin > 240){
+    if(!confirm(`La position du véhicule est ancienne${infoAge}. Ouvrir Google Maps quand même ?`)){
+      return;
+    }
+  }
+
+  setStatus(`Ouverture Google Maps → véhicule${infoAge}…`);
+  window.location.href = mapsWalkToCoordsUrl(v.lat, v.lon);
+}
 
 
 async function fetchText(url){
@@ -384,16 +473,14 @@ function guessPostcodeForCity(city){
     return bestPc;
   }catch(e){ return null; }
 }
+
 async function getMairie(city){
   const mairies = loadMairies();
   const key = stripAccents(city.toLowerCase());
   if(mairies[key]) return mairies[key];
 
   // 🔧 Fix ciblé : Bompas
-  // Nominatim peut échouer sur "Mairie Bompas" selon les hints/typos ; on force une requête + précise
-  // et on garde un fallback de coordonnées si jamais l'API renvoie 0 résultat.
   if(key === "bompas"){
-    // Si déjà en cache (au cas où la clé diffère dans le stockage), on retente aussi avec une clé canonique.
     if(mairies["bompas"]) return mairies["bompas"];
     try{
       setStatus(`Géocodage de la mairie de ${city}…`);
@@ -417,14 +504,12 @@ async function getMairie(city){
         return mairie;
       }
     }catch(_){}
-    // Fallback coordonnées (si Nominatim ne répond pas / 0 résultat)
     const mairie = { lat: 42.730316, lon: 2.935614, display: "Mairie de Bompas (fallback)" };
     mairies["bompas"] = mairie;
     mairies[key] = mairie;
     saveMairies(mairies);
     return mairie;
   }
-
 
   setStatus(`Géocodage de la mairie de ${city}…`);
   const pcHint = guessPostcodeForCity(city);
@@ -450,18 +535,15 @@ async function getMairie(city){
 }
 
 function isInPO(address){
-  // Vérification département : code postal 66 + "Pyrénées-Orientales" si disponible
   const pc = (address.postcode||"").trim();
   if(!pc.startsWith("66")) return false;
   const txt = stripAccents(JSON.stringify(address).toLowerCase());
   if(txt.includes("pyrenees-orientales") || txt.includes("pyrenees orientales")) return true;
-  // si l'API ne donne pas le département, on accepte quand même si CP 66
   return true;
 }
 
 async function geocodeAddress(street, city, postcodeOpt){
   const mairie = await getMairie(city);
-  // Bias: viewbox around mairie (~25km)
   const delta = 0.22; // degrees ~ 20-25km
   const left = (mairie.lon - delta).toFixed(6);
   const right = (mairie.lon + delta).toFixed(6);
@@ -482,7 +564,6 @@ async function geocodeAddress(street, city, postcodeOpt){
   });
   if(!results.length) return null;
 
-  // Pick best: in PO and close to mairie
   let best = null;
   let bestScore = Infinity;
 
@@ -493,11 +574,9 @@ async function geocodeAddress(street, city, postcodeOpt){
     const pc = (addr.postcode||"").trim();
     const okDept = isInPO(addr);
     if(!okDept) continue;
-    // If selected city is a real commune (not just postcode), ensure it's not wildly different
-    // We accept if within 20km of mairie.
     if(dist > 20) continue;
 
-    const score = dist; // simplest
+    const score = dist;
     if(score < bestScore){
       bestScore = score;
       best = {
@@ -562,10 +641,7 @@ function updateNavUI(){
   if(navMapsBtn) navMapsBtn.classList.toggle("active", mode === "maps");
 }
 
-
 function exportAllTxt(){
-  // Exporte toutes les villes + toutes les adresses dans l'ordre actuel (tri mairie si déjà appliqué)
-  // Inclut aussi l'état 'fait' si présent.
   const lines = [];
   lines.push("EXPORT TOURNEE (TXT)");
   lines.push(`Date: ${new Date().toLocaleString("fr-FR")}`);
@@ -595,7 +671,6 @@ function exportAllTxt(){
 
 function wazeUrl(a){
   const q = encodeURIComponent(formatLine(a));
-  // deep link first
   return {
     deep: `waze://?q=${q}&navigate=yes`,
     web: `https://waze.com/ul?q=${q}&navigate=yes`
@@ -603,7 +678,6 @@ function wazeUrl(a){
 }
 
 function mapsWalkUrl(a){
-  // URL stable (PWA / iOS / Android) : Google Maps Directions API
   const dest = encodeURIComponent(formatLine(a));
   return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=walking`;
 }
@@ -618,8 +692,7 @@ function render(){
 
   cityMeta.textContent = `${city} • ${done} / ${total} faits`;
 
-  // ordre conservé : mairie → plus proche → plus proche…
-addrList.innerHTML = "";
+  addrList.innerHTML = "";
   arr.forEach((a, idx)=>{
     const li = document.createElement("li");
     li.className = "addr";
@@ -651,6 +724,7 @@ addrList.innerHTML = "";
       render();
     });
     l2.appendChild(b1); l2.appendChild(b2);
+
     if(typeof a._stepKm === "number" && isFinite(a._stepKm)){
       const b3 = document.createElement("span");
       b3.className = "badge";
@@ -668,7 +742,6 @@ addrList.innerHTML = "";
     main.appendChild(l2);
 
     main.addEventListener("click", ()=>{
-      // Ouvre l'adresse dans l'app choisie (Waze ou Google Maps en mode piéton)
       a.done = true;
       saveData();
       render();
@@ -680,10 +753,7 @@ addrList.innerHTML = "";
       }
 
       const url = wazeUrl(a);
-      // Try deep link; if blocked, user can still have Waze installed
       window.location.href = url.deep;
-      // Ne pas ouvrir waze.com automatiquement (sinon au retour ça affiche la page waze.com)
-      // Fallback seulement si Waze ne s'est pas ouvert (page toujours visible)
       setTimeout(()=>{
         if(document.visibilityState === "visible"){
           if(confirm("Waze ne s'est pas ouvert. Ouvrir la version web ?")) window.open(url.web, "_blank");
@@ -723,9 +793,7 @@ addrList.innerHTML = "";
   });
 }
 
-
 function getDefaultPostcode(city){
-  // Devine un code postal à partir des adresses déjà enregistrées pour cette ville
   const list = data?.[city] || [];
   const counts = {};
   for(const a of list){
@@ -781,7 +849,6 @@ async function saveModal(){
       return;
     }
 
-    // build object
     const obj = {
       id: editContext?.id || genId(),
       street,
@@ -792,10 +859,8 @@ async function saveModal(){
       done: false
     };
 
-    // city list exists
     if(!data[city]) data[city] = [];
 
-    // Dedupe
     const key = addrKey(obj);
     const exists = data[city].some(a=>a.id !== obj.id && addrKey(a) === key);
     if(exists){
@@ -812,7 +877,6 @@ async function saveModal(){
     dedupeCity(city);
     saveData();
 
-    // Update distances + order
     await applyOrderForCity(city);
 
     closeModal();
@@ -838,7 +902,6 @@ function openEdit(city, id){
 
 async function applyOrderForCity(city){
   const mairie = await getMairie(city);
-
   const arr = getCityList(city);
 
   const ok = [];
@@ -891,7 +954,7 @@ async function applyOrderForCity(city){
 async function optimizeCity(){
   const city = currentCity();
   try{
-    const mairie = await getMairie(city);
+    await getMairie(city);
     const arr = data[city] || [];
     let missing = arr.filter(a=>!(typeof a.lat==="number" && typeof a.lon==="number")).length;
 
@@ -904,7 +967,6 @@ async function optimizeCity(){
     }
 
     setStatus(`Géocodage manquant : ${missing} adresse(s)…`);
-    // rate limit ~1req/s
     for(const a of arr){
       if(typeof a.lat==="number" && typeof a.lon==="number") continue;
       const pcOpt = (a.postcode||"").trim();
@@ -919,7 +981,6 @@ async function optimizeCity(){
       await sleep(1100);
     }
 
-    // Remove anything that ended up outside 66
     data[city] = (data[city]||[]).filter(a=>String(a.postcode||"").startsWith("66"));
     dedupeCity(city);
     await applyOrderForCity(city);
@@ -935,7 +996,6 @@ async function wire(){
 
   fillCitySelect();
   ensureIds();
-  // cleanup: dedupe every city and remove non-66
   for(const city of Object.keys(data)){
     data[city] = (data[city]||[]).filter(a=>String(a.postcode||"").startsWith("66"));
     dedupeCity(city);
@@ -959,12 +1019,15 @@ async function wire(){
   if(navMapsBtn) navMapsBtn.addEventListener("click", ()=>setNavApp("maps"));
   updateNavUI();
 
+  // ✅ NOUVEAU : boutons véhicule
+  if(btnSaveVehiclePos) btnSaveVehiclePos.addEventListener("click", saveVehiclePosition);
+  if(btnFindVehiclePos) btnFindVehiclePos.addEventListener("click", findVehicle);
+
   modalClose.addEventListener("click", closeModal);
   modalCancel.addEventListener("click", closeModal);
   modalBackdrop.addEventListener("click", closeModal);
   modalSave.addEventListener("click", saveModal);
 
-  // initial render
   applyOrderForCity(currentCity()).then(()=>render()).catch(()=>render());
 }
 
