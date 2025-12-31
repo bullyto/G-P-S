@@ -408,3 +408,110 @@ select:focus, input:focus{border-color: rgba(100,160,255,.55)}
 .kmrow .badge{ white-space: nowrap; }
 
 .badge{ min-width: 0; }
+
+/* Readability v10.14 - rendre la liste ultra lisible */
+.addr{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 46px 1fr 86px; /* num | contenu | actions */
+  gap: 12px;
+  align-items: center;
+}
+.num{
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 18px;
+  font-weight: 900;
+}
+.addrmain{
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6px 4px;
+}
+.line1{
+  width: 100%;
+  max-width: 100%;
+  text-align: left !important;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  line-height: 1.15;
+  padding: 0;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 2 lignes max pour la rue */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line2{
+  width: 100%;
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 6px;
+}
+.badgerow{
+  width: 100%;
+  display:flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* Bulle CP/Ville plus "texte" que pastille */
+.badge.citypill{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Badge statut plus contrasté */
+.badge.todo, .badge.done{
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 900;
+}
+.kmrow{
+  width: 100%;
+  display:flex;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+/* Distances en mini-badges discrets */
+.kmrow .badge{
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+/* Actions alignées à droite */
+.actions{
+  display:flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.iconbtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+}
