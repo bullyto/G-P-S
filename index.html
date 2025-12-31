@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title> APERO DE NUIT 66 (V10.5)</title>
+  <title> APERO DE NUIT 66 (V10.9)</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0b1220"/>
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css?v=109"/>
 </head>
 <body>
   <header class="topbar">
@@ -34,8 +34,13 @@
           <button id="btnSaveVehicle" class="btn btn-ghost" type="button">📍 Enregistrer véhicule</button>
           <button id="btnFindVehicle" class="btn btn-ghost" type="button">🧭 Retrouver véhicule</button>
         </div>
+
+        <div class="startmode" role="group" aria-label="Point de départ">
+          <button id="btnStartMairie" class="segmini is-active" type="button">Point départ : Mairie</button>
+          <button id="btnStartVehicle" class="segmini" type="button">Point départ : Véhicule</button>
+        </div>
         <div class="vehicle__hint" id="vehicleHint">
-          Astuce : enregistre quand tu te gares, puis “Retrouver” te lance Maps à pied.
+          Véhicule non enregistré
         </div>
       </div>
     </section>
@@ -103,6 +108,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=109"></script>
 </body>
 </html>
