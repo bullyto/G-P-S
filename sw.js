@@ -1,5 +1,5 @@
 
-const CACHE = "tournee-v8-cache";
+const CACHE = "gpsv8.5";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./data/adresses.csv"];
 self.addEventListener("install",(e)=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener("activate",(e)=>{ e.waitUntil(self.clients.claim()); });
