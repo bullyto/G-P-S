@@ -234,3 +234,45 @@ select,input{
   display:flex; gap:10px;
 }
 .hidden{display:none !important}
+
+
+/* -------- Vehicle GPS panel (Enregistrer / Retrouver) -------- */
+.panel{
+  background:rgba(17,26,47,.78);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 14px 40px rgba(0,0,0,.22);
+}
+.vehiclepanel{
+  margin-top:10px;
+  border-style:dashed;
+  border-color:rgba(255,255,255,.14);
+}
+.vehiclepanel .hint{margin-top:10px}
+.muted{color:var(--muted)}
+.vehiclepanel .muted{
+  font-size:13px;
+  line-height:1.35;
+  margin:10px 2px 0;
+}
+
+/* Button variants */
+.btn.secondary,
+.btn-secondary{
+  background:linear-gradient(180deg, rgba(15,23,48,.9), rgba(15,23,48,.65));
+  color:var(--text);
+  border-color:rgba(255,255,255,.10);
+}
+.btn.secondary:hover,
+.btn-secondary:hover{
+  border-color:rgba(255,255,255,.16);
+}
+
+.btn:disabled,
+.iconbtn:disabled,
+.segbtn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none !important;
+}
