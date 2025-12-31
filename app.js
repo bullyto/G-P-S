@@ -32,6 +32,7 @@ const btnExportTxt = document.getElementById("btnExportTxt");
 // Parking véhicule
 const btnSaveVehicle = document.getElementById("btnSaveVehicle");
 const btnFindVehicle = document.getElementById("btnFindVehicle");
+const vehicleHint = document.getElementById("vehicleHint");
 
 // Toggle navigation (en haut)
 const navWazeBtn = document.getElementById("navWaze");
@@ -467,13 +468,13 @@ function isInPO(address){
 }
 
 async function geocodeAddress(street, city, postcodeOpt){
-  const mairie = await getMairie(city);
-  // Bias: viewbox around mairie (~25km)
+  const anchor = await getAnchor(city);
+  // Bias: viewbox autour du point de départ (véhicule si enregistré, sinon mairie) (~25km)
   const delta = 0.22; // degrees ~ 20-25km
-  const left = (mairie.lon - delta).toFixed(6);
-  const right = (mairie.lon + delta).toFixed(6);
-  const top = (mairie.lat + delta).toFixed(6);
-  const bottom = (mairie.lat - delta).toFixed(6);
+  const left = (anchor.lon - delta).toFixed(6);
+  const right = (anchor.lon + delta).toFixed(6);
+  const top = (anchor.lat + delta).toFixed(6);
+  const bottom = (anchor.lat - delta).toFixed(6);
 
   const pcPart = postcodeOpt ? ` ${postcodeOpt}` : "";
   const q = `${street},${pcPart} ${city}, France`;
@@ -495,7 +496,7 @@ async function geocodeAddress(street, city, postcodeOpt){
 
   for(const r of results){
     const lat = parseFloat(r.lat), lon = parseFloat(r.lon);
-    const dist = haversineKm(mairie.lat, mairie.lon, lat, lon);
+    const dist = haversineKm(anchor.lat, anchor.lon, lat, lon);
     const addr = r.address || {};
     const pc = (addr.postcode||"").trim();
     const okDept = isInPO(addr);
@@ -847,7 +848,7 @@ function openEdit(city, id){
 }
 
 async function applyOrderForCity(city){
-  const mairie = await getMairie(city);
+  const anchor = await getAnchor(city);
 
   const arr = getCityList(city);
 
@@ -861,8 +862,8 @@ async function applyOrderForCity(city){
     }
   }
 
-  let curLat = mairie.lat;
-  let curLon = mairie.lon;
+  let curLat = anchor.lat;
+  let curLon = anchor.lon;
   let cum = 0;
 
   const ordered = [];
@@ -901,7 +902,7 @@ async function applyOrderForCity(city){
 async function optimizeCity(){
   const city = currentCity();
   try{
-    const mairie = await getMairie(city);
+    const anchor = await getAnchor(city);
     const arr = data[city] || [];
     let missing = arr.filter(a=>!(typeof a.lat==="number" && typeof a.lon==="number")).length;
 
@@ -947,6 +948,41 @@ function loadVehicle(){
 function saveVehiclePos(pos){
   localStorage.setItem(LS_VEHICLE, JSON.stringify(pos));
 }
+
+function fmtStationTs(ts){
+  if(!ts) return null;
+  try{
+    const d = new Date(ts);
+    // If not today, include date
+    const now = new Date();
+    const sameDay = d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+    const t = d.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
+    if(sameDay) return t;
+    const dd = d.toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit"});
+    return `${dd} à ${t}`;
+  }catch(e){ return null; }
+}
+function updateVehicleHint(){
+  if(!vehicleHint) return;
+  const v = loadVehicle();
+  if(v && typeof v.lat==="number" && typeof v.lon==="number"){
+    const t = fmtStationTs(v.ts);
+    vehicleHint.textContent = t ? `Stationné à ${t}` : "Véhicule enregistré ✅";
+  }else{
+    vehicleHint.textContent = "Véhicule non enregistré";
+  }
+}
+
+// Point de départ (mairie par défaut, véhicule si enregistré)
+async function getAnchor(city){
+  const v = loadVehicle();
+  if(v && typeof v.lat==="number" && typeof v.lon==="number"){
+    return { lat: v.lat, lon: v.lon, display: "Véhicule", source: "vehicle", ts: v.ts || null };
+  }
+  const anchor = await getAnchor(city);
+  return { lat: anchor.lat, lon: anchor.lon, display: mairie.display || "Mairie", source: "mairie", ts: null };
+}
+
 function setFindEnabled(on){
   if(!btnFindVehicle) return;
   btnFindVehicle.disabled = !on;
@@ -957,9 +993,21 @@ function initVehicleUI(){
 
   const v = loadVehicle();
   setFindEnabled(!!(v && typeof v.lat==="number" && typeof v.lon==="number"));
+  updateVehicleHint();
 
   if(btnSaveVehicle){
     btnSaveVehicle.addEventListener("click", async ()=>{
+      const existing = loadVehicle();
+      if(existing && typeof existing.lat==="number" && typeof existing.lon==="number"){
+        const t = fmtStationTs(existing.ts);
+        const msg = t
+          ? `Une position véhicule est déjà enregistrée (stationné à ${t}).\n\nRemplacer cette position ?`
+          : "Une position véhicule est déjà enregistrée.\n\nRemplacer cette position ?";
+        if(!confirm(msg)){
+          setStatus("Position véhicule conservée.");
+          return;
+        }
+      }
       if(!("geolocation" in navigator)){
         setStatus("Géolocalisation indisponible sur ce téléphone.", true);
         return;
@@ -971,6 +1019,7 @@ function initVehicleUI(){
         const payload = {lat, lon, ts: Date.now()};
         saveVehiclePos(payload);
         setFindEnabled(true);
+        updateVehicleHint();
         setStatus("Véhicule enregistré ✅");
       }, (err)=>{
         console.error(err);
@@ -987,6 +1036,7 @@ function initVehicleUI(){
       const v = loadVehicle();
       if(!v || typeof v.lat!=="number" || typeof v.lon!=="number"){
         setFindEnabled(false);
+        updateVehicleHint();
         setStatus("Aucun véhicule enregistré. Clique d’abord sur “Enregistrer véhicule”.", true);
         return;
       }
