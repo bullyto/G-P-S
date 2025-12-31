@@ -1075,8 +1075,12 @@ function initVehicleUI(){
       if(existing && typeof existing.lat==="number" && typeof existing.lon==="number"){
         const t = fmtStationTs(existing.ts);
         const msg = t
-          ? `Une position véhicule est déjà enregistrée (stationné à ${t}).\n\nRemplacer cette position ?`
-          : "Une position véhicule est déjà enregistrée.\n\nRemplacer cette position ?";
+          ? `Une position véhicule est déjà enregistrée (stationné à ${t}).
+
+Remplacer cette position ?`
+          : "Une position véhicule est déjà enregistrée.
+
+Remplacer cette position ?";
         if(!confirm(msg)){
           setStatus("Position véhicule conservée.");
           return;
